@@ -8,35 +8,35 @@ const categories = [
     name: 'Silk Sarees',
     slug: 'silk-sarees',
     description: 'Elegant silk sarees perfect for special occasions',
-    image: '/images/products/catgories/silk-sarees.jpg',
+    image: '/images/products/categories/silk-sarees.jpg',
     product_count: 0
   },
   {
     name: 'Cotton Sarees',
     slug: 'cotton-sarees',
     description: 'Comfortable cotton sarees for daily wear',
-    image: '/images/products/catgories/cotton-sarees.jpg',
+    image: '/images/products/categories/cotton-sarees.jpg',
     product_count: 0
   },
   {
     name: 'Designer Sarees',
     slug: 'designer-sarees',
     description: 'Exclusive designer sarees with unique patterns',
-    image: '/images/products/catgories/designer-sarees.jpg',
+    image: '/images/products/categories/designer-sarees.jpg',
     product_count: 0
   },
   {
     name: 'Wedding Sarees',
     slug: 'wedding-sarees',
     description: 'Bridal sarees for your special day',
-    image: '/images/products/catgories/wedding-sarees.jpg',
+    image: '/images/products/categories/wedding-sarees.jpg',
     product_count: 0
   },
   {
     name: 'Party Wear',
     slug: 'party-wear',
     description: 'Stylish party wear sarees for celebrations',
-    image: '/images/products/catgories/party-wear.jpg',
+    image: '/images/products/categories/party-wear.jpg',
     product_count: 0
   }
 ];
