@@ -1,0 +1,302 @@
+# Enhanced Full-Stack Saree E-commerce Development Specification
+
+You are assisting me in building a full-stack e-commerce website for my father's saree-selling business. Please use all of the following details to understand the context, goals, and current progress:
+
+---
+
+👤 **Business Background:**
+- We are digitizing my father's offline saree business.
+- Target audience: Indian customers initially, but international buyers may be added later.
+- Sarees will be uploaded daily.
+- Product uploads will be manually done by my father or a shop assistant at first, then eventually by a hired employee.
+
+---
+
+🧭 **Business Goals:**
+- Create a modern, responsive, and scalable fashion-focused e-commerce website like Snitch, Zara, etc., but for sarees.
+- **MOBILE-RESPONSIVE WEBSITE**: 72% of fashion purchases happen on mobile - ensure website works perfectly on mobile devices
+- Allow customers to purchase with or without creating an account.
+- Enable both **online payments** (UPI/cards) and **Cash on Delivery (COD)**.
+- Collect mandatory **mobile number** at checkout via OTP (guest checkout allowed).
+- Launch with a good number of sarees in the catalog and increase volume over time.
+- **Target Performance**: Page loads under 2.5 seconds, 4-5% conversion rate
+- Eventually expand to a mobile app version.
+
+---
+
+🧩 **Key Features:**
+
+1. **Mobile-responsive product listing** (with filters: category, color, price, fabric, occasion)
+2. **Fast-loading product detail pages** (with multiple images, zoom, 360-view, price, description)
+3. Add to cart / Remove from cart with real-time updates
+4. **Single-page checkout flow** + OTP verification for mobile number
+5. **Enhanced payment options**: Razorpay + Mobile wallets (GPay, PhonePe, Paytm) + Cash on Delivery
+6. Order tracking system with SMS/email notifications
+7. Product reviews and ratings with photo uploads
+8. Loyalty points system (₹1 = 1 point; 100 points = ₹10 discount)
+9. Admin dashboard (for saree uploads, orders, reviews, returns, analytics)
+10. **Progressive Web App (PWA)** capabilities for app-like experience
+11. **Fashion-specific SEO** with structured data and rich snippets
+12. Future-ready backend for international shipping and multi-language support
+13. AI-powered chatbot integration (Tidio, Crisp, or GPT-based)
+14. **Performance optimization**: Image compression, lazy loading, caching
+
+---
+
+🛠️ **Enhanced Tech Stack:**
+
+Frontend:
+- **Framework**: Next.js 15 with App Router and Server Components
+- **Styling**: Tailwind CSS with mobile-first approach
+- **Performance**: Image optimization, PWA capabilities, Core Web Vitals optimization
+
+Backend:
+- **Framework**: Node.js with Express or NestJS
+- **Security**: Rate limiting, PCI DSS compliance, input validation
+- **Architecture**: Clean architecture with microservices-ready structure
+
+Database:
+- **Primary**: MongoDB Atlas with optimized indexing for product filters
+- **Caching**: Redis for session management and cart data
+
+Auth & OTP:
+- Firebase Auth or custom JWT with MSG91/Twilio OTP
+- **Security**: Multi-factor authentication, fraud detection
+
+Payments:
+- **Primary**: Razorpay with webhook verification
+- **Additional**: Mobile wallet integrations (GPay, PhonePe, Paytm)
+- **Future**: Stripe for international expansion
+
+Image Management:
+- Cloudinary with automatic WebP conversion and responsive images
+- CDN optimization for global delivery
+
+Hosting & Performance:
+- **Frontend**: Vercel with edge functions
+- **Backend**: Railway or Render with auto-scaling
+- **Monitoring**: Performance tracking and error monitoring
+
+Chatbot:
+- Tidio (low-code) or custom GPT API implementation with fashion-specific training
+
+---
+
+🧪 **Enhanced Prototype Plan (Phased Development):**
+
+**Phase 1**: Responsive website foundation (Weeks 1-2)
+- Next.js 15 setup with mobile-responsive product listing
+- MongoDB schema design with proper indexing
+- Basic cart functionality with local storage
+
+**Phase 2**: Checkout optimization (Weeks 3-4)
+- Single-page checkout UI with mobile optimization
+- Guest checkout flow with form validation
+- Payment method selection UI
+
+**Phase 3**: Authentication & Security (Week 5)
+- OTP mobile verification via Firebase/MSG91
+- Rate limiting and security middleware
+- User session management
+
+**Phase 4**: Payment integration (Week 6)
+- Razorpay integration with webhook verification
+- Mobile wallet payment options
+- COD option with order management
+
+**Phase 5**: Database & API (Weeks 7-8)
+- MongoDB integration with optimized queries
+- RESTful API with proper error handling
+- Real-time inventory management
+
+**Phase 6**: Admin dashboard (Weeks 9-10)
+- Product upload with image optimization
+- Order management and analytics
+- Customer and inventory management
+
+**Phase 7**: Enhanced features (Weeks 11-12)
+- Reviews & ratings system with photo uploads
+- Loyalty points calculation and redemption
+- Email/SMS notification system
+
+**Phase 8**: SEO & Performance (Weeks 13-14)
+- Fashion-specific SEO with structured data
+- Core Web Vitals optimization
+- PWA implementation
+
+**Phase 9**: Customer engagement (Weeks 15-16)
+- Order tracking with real-time updates
+- AI chatbot integration
+- Push notifications
+
+**Phase 10**: Testing & optimization (Weeks 17-18)
+- Performance testing and optimization
+- Security audit and penetration testing
+- User acceptance testing
+
+**Phase 11**: Deployment (Weeks 19-20)
+- Production deployment with monitoring
+- Analytics setup and tracking
+- Go-live and post-launch support
+
+---
+
+🎨 **Enhanced Branding & UX:**
+
+**Color Palette**:
+- Primary: Deep Maroon (#800020) - luxury and tradition
+- Secondary: Royal Blue (#1E3A8A) - trust and elegance  
+- Accent: Gold (#FFD700) - premium positioning
+- Background: Cream (#FAF3E0) - elegant and readable
+- **Mobile consideration**: High contrast ratios for accessibility
+
+**Typography**:
+- Headings: Playfair Display (elegant, traditional)
+- Body: Lato (readable on mobile screens)
+- UI Elements: Poppins (modern, clean)
+- **Mobile optimization**: Minimum 16px font size for readability
+
+**Design Principles**:
+- Mobile-first responsive design
+- Touch-friendly interface (44px minimum touch targets)
+- Fast loading with skeleton screens
+- Progressive image loading
+- Gesture-based navigation support
+
+---
+
+💬 **Enhanced Chatbot Integration:**
+- **Fashion-specific training**: Saree care, styling advice, size guidance
+- **Order support**: Tracking, returns, exchanges
+- **Product recommendations**: Based on occasion, budget, preferences
+- **Cultural guidance**: Regional saree styles, draping methods
+- **Integration options**: 
+  - Tidio/Crisp: Quick setup with fashion templates
+  - Custom GPT: Advanced conversational AI with saree expertise
+
+---
+
+💾 **Optimized Database Schema:**
+
+**Products Collection**:
+```javascript
+{
+  _id: ObjectId,
+  name: "Banarasi Silk Saree",
+  category: "Silk Sarees",
+  specifications: {
+    fabric: "Pure Silk",
+    pattern: "Floral", 
+    occasion: "Wedding",
+    care_instructions: "Dry clean only"
+  },
+  pricing: {
+    base_price: 15000,
+    selling_price: 12000,
+    discount_percentage: 20
+  },
+  inventory: {
+    available_stock: 35,
+    reserved_stock: 5,
+    reorder_level: 10
+  },
+  media: {
+    primary_image: "saree-001-main.webp",
+    gallery: ["saree-001-1.webp", "saree-001-2.webp"],
+    video_url: "product-video.mp4"
+  },
+  seo: {
+    meta_title: "Premium Banarasi Silk Saree - Handwoven",
+    meta_description: "Authentic handwoven Banarasi silk saree...",
+    structured_data: {...}
+  }
+}
+```
+
+**Enhanced Indexing Strategy**:
+- Compound indexes for category + price + fabric filters
+- Text indexes for search functionality
+- Geospatial indexes for location-based features
+
+---
+
+📡 **Enhanced API Endpoints:**
+
+**Core APIs**:
+- `GET /api/v1/products` - Optimized with pagination and filtering
+- `POST /api/v1/checkout` - Single-page checkout processing
+- `POST /api/v1/auth/otp` - Mobile OTP verification
+- `POST /api/v1/payments/razorpay` - Payment processing with webhooks
+- `GET /api/v1/orders/track/:id` - Real-time order tracking
+- `POST /api/v1/admin/products/bulk` - Bulk product upload
+
+**Performance APIs**:
+- `GET /api/v1/products/search` - Fast search with autocomplete
+- `GET /api/v1/recommendations/:userId` - AI-powered recommendations
+- `POST /api/v1/analytics/events` - User behavior tracking
+
+---
+
+📦 **Enhanced Shipping/Returns Policy:**
+- **Shipping**: 
+  - Fixed ₹99 within India
+  - Free shipping above ₹2000
+  - Express delivery options
+  - Integration ready for Delhivery/Shiprocket
+- **Returns**: 
+  - 7-day return window
+  - Quality guarantee with photo verification
+  - Refund via store credit (instant) or original method (5-7 days)
+  - Return pickup service in major cities
+
+---
+
+🔒 **Security & Performance Requirements:**
+
+**Security Measures**:
+- API rate limiting (100 requests/minute per IP)
+- Input validation and sanitization
+- PCI DSS compliance for payment handling
+- HTTPS everywhere with security headers
+- Fraud detection for high-value orders
+
+**Performance Targets**:
+- **Core Web Vitals**: LCP < 2.5s, CLS < 0.1, INP < 200ms
+- **Mobile PageSpeed**: 90+ score
+- **Conversion Rate**: 4-5% target
+- **Uptime**: 99.9% availability
+
+---
+
+🌍 **Future Expansion Readiness:**
+
+**International Preparation**:
+- Multi-currency support framework
+- Stripe integration for global payments
+- Localization-ready content structure
+- International shipping calculation engine
+- Multi-language support architecture
+
+**Mobile App Migration**:
+- PWA to React Native transition plan
+- Native device features integration
+- App store optimization strategy
+- Push notification enhancement
+
+---
+
+📍 **Implementation Instructions:**
+Using this enhanced specification, help me:
+
+1. **Start with responsive website development**
+2. Design UI mockups for website (mobile + desktop responsive) (Home, Product Page, Single-page Checkout, Admin Dashboard)
+3. Build optimized backend routes and database schema with proper indexing
+4. Implement secure OTP verification and Razorpay integration with mobile wallets
+5. Build or integrate AI-powered chatbot with fashion expertise
+6. Optimize for Core Web Vitals and mobile performance
+7. Implement fashion-specific SEO with structured data
+8. Create admin dashboard with analytics and bulk management features
+9. Set up monitoring and performance tracking
+10. Prepare architecture for future mobile app development
+
+**Current Priority: Start with the responsive website development (works on both mobile and desktop) focusing on core e-commerce functionality.**
