@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 export interface IUser extends Document {
@@ -6,6 +6,13 @@ export interface IUser extends Document {
   email: string;
   password: string;
   phone?: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+  };
   role: 'customer' | 'admin';
   is_active: boolean;
   email_verified: boolean;
@@ -39,6 +46,28 @@ const UserSchema: Schema = new Schema({
     trim: true,
     match: [/^[0-9]{10}$/, 'Please enter a valid 10-digit phone number']
   },
+  address: {
+    street: {
+      type: String,
+      trim: true,
+    },
+    city: {
+      type: String,
+      trim: true,
+    },
+    state: {
+      type: String,
+      trim: true,
+    },
+    pincode: {
+      type: String,
+      trim: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+  },
   role: {
     type: String,
     enum: ['customer', 'admin'],
@@ -62,7 +91,7 @@ UserSchema.pre('save', async function(next) {
   
   try {
     const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
+    this.password = await bcrypt.hash(this.password as string, salt);
     next();
   } catch (error) {
     next(error as Error);
@@ -78,4 +107,5 @@ UserSchema.methods.comparePassword = async function(candidatePassword: string): 
 UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1, is_active: 1 });
 
-export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema); 
+export const UserModel: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+export default UserModel; 

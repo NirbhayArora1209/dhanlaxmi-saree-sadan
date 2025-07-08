@@ -1,14 +1,36 @@
 // Product Types
+export interface ProductImage {
+  url: string;
+  view_type: 'front' | 'back' | 'side' | 'drape' | 'flat' | 'mannequin' | 'close-up' | 'detail';
+  alt_text?: string;
+}
+
 export interface Product {
   _id: string;
   name: string;
   description: string;
   category: string;
-  images: string[];
-  pricing: ProductPricing;
-  specifications: ProductSpecifications;
-  ratings: ProductRatings;
-  inventory: ProductInventory;
+  images: ProductImage[];
+  pricing: {
+    base_price: number;
+    selling_price: number;
+    discount_percentage: number;
+  };
+  specifications: {
+    fabric: string;
+    occasion: string;
+    length: number;
+    blouse_included: boolean;
+    care_instructions: string;
+  };
+  ratings: {
+    average_rating: number;
+    total_reviews: number;
+  };
+  inventory: {
+    available_stock: number;
+    sku: string;
+  };
   is_featured: boolean;
   is_active: boolean;
   created_at: Date;
@@ -77,10 +99,14 @@ export interface User {
   _id: string;
   name: string;
   email: string;
-  phone: string;
-  addresses: Address[];
-  preferences: UserPreferences;
-  loyalty_points: number;
+  phone?: string;
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+  };
   created_at: Date;
   updated_at: Date;
 }
@@ -112,28 +138,28 @@ export interface UserPreferences {
 // Order Types
 export interface Order {
   _id: string;
-  order_number: string;
   user_id: string;
   items: OrderItem[];
-  shipping_address: Address;
-  billing_address: Address;
-  payment: PaymentDetails;
-  status: OrderStatus;
-  tracking: OrderTracking;
-  totals: OrderTotals;
+  total_amount: number;
+  shipping_address: {
+    street: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+  };
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  payment_status: 'pending' | 'paid' | 'failed';
   created_at: Date;
   updated_at: Date;
 }
 
 export interface OrderItem {
   product_id: string;
-  product_name: string;
-  product_image: string;
-  quantity: number;
+  name: string;
   price: number;
-  total: number;
-  selected_size?: string;
-  selected_color?: string;
+  quantity: number;
+  image: string;
 }
 
 export interface PaymentDetails {
@@ -198,17 +224,20 @@ export enum PaymentStatus {
 
 // Filter Types
 export interface ProductFilters {
-  category?: string[];
-  price_range?: {
-    min: number;
-    max: number;
-  };
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
   fabric?: string[];
   occasion?: string[];
   pattern?: string[];
   rating?: number;
-  availability?: 'in_stock' | 'out_of_stock' | 'all';
-  sort_by?: 'price_low' | 'price_high' | 'newest' | 'popular' | 'rating';
+  inStock?: boolean;
+  featured?: boolean;
+}
+
+export interface SortOptions {
+  field: 'name' | 'price' | 'rating' | 'created_at';
+  order: 'asc' | 'desc';
 }
 
 // API Response Types
@@ -217,24 +246,23 @@ export interface ApiResponse<T> {
   data?: T;
   message?: string;
   error?: string;
-  pagination?: PaginationInfo;
 }
 
-export interface PaginationInfo {
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
   page: number;
   limit: number;
-  total: number;
-  total_pages: number;
-  has_next: boolean;
-  has_prev: boolean;
+  totalPages: number;
 }
 
 // Search Types
-export interface SearchResult {
-  products: Product[];
-  suggestions: string[];
-  filters: ProductFilters;
-  total_results: number;
+export interface SearchParams {
+  query?: string;
+  filters?: ProductFilters;
+  sort?: SortOptions;
+  page?: number;
+  limit?: number;
 }
 
 // Review Types
@@ -278,11 +306,10 @@ export interface Category {
   slug: string;
   description: string;
   image: string;
-  parent_id?: string;
-  children?: Category[];
   product_count: number;
   is_active: boolean;
-  sort_order: number;
+  created_at: Date;
+  updated_at: Date;
 }
 
 // Banner Types

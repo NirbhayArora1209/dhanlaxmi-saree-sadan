@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server';
 import { connectDB } from '@/lib/db';
-import User from '@/models/User';
+import mongoose from 'mongoose';
+import { IUser } from '@/models/User';
 import { generateToken } from '@/lib/auth';
-import { successResponse, errorResponse, serverErrorResponse } from '@/lib/api';
+import { successResponse, errorResponse, handleDatabaseError } from '@/lib/api';
+import UserModel from '@/models/User';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,18 +16,18 @@ export async function POST(request: NextRequest) {
     const requiredFields = ['name', 'email', 'password'];
     for (const field of requiredFields) {
       if (!body[field]) {
-        return errorResponse(`Missing required field: ${field}`);
+        return errorResponse(`Missing required field: ${field}`, 400);
       }
     }
 
     // Check if user already exists
-    const existingUser = await User.findOne({ email: body.email.toLowerCase() });
+    const existingUser = await UserModel.findOne({ email: body.email.toLowerCase() });
     if (existingUser) {
-      return errorResponse('User with this email already exists');
+      return errorResponse('User with this email already exists', 409);
     }
 
     // Create new user
-    const user = new User({
+    const user = new UserModel({
       name: body.name,
       email: body.email.toLowerCase(),
       password: body.password,
@@ -36,14 +38,14 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token
     const token = generateToken({
-      userId: user._id.toString(),
+      userId: (user._id as any).toString(),
       email: user.email,
       role: user.role
     });
 
     // Return user data without password
     const userData = {
-      _id: user._id,
+      _id: (user._id as any).toString(),
       name: user.name,
       email: user.email,
       phone: user.phone,
@@ -54,20 +56,9 @@ export async function POST(request: NextRequest) {
     return successResponse({
       user: userData,
       token
-    }, 'User registered successfully');
+    });
 
-  } catch (error: any) {
-    console.error('Error registering user:', error);
-    
-    if (error.code === 11000) {
-      return errorResponse('User with this email already exists');
-    }
-    
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((err: any) => err.message);
-      return errorResponse(messages.join(', '));
-    }
-
-    return serverErrorResponse('Failed to register user');
+  } catch (error) {
+    return handleDatabaseError(error);
   }
 } 

@@ -1,212 +1,258 @@
+"use client";
+import React from 'react';
 import Link from 'next/link';
-import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { 
+  Facebook, 
+  Instagram, 
+  Twitter, 
+  Youtube, 
+  Mail, 
+  Phone, 
+  MapPin,
+  ArrowRight,
+  Heart,
+  Shield,
+  Truck,
+  CreditCard
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  const footerSections = [
+    {
+      title: 'Shop',
+      links: [
+        { label: 'All Products', href: '/products' },
+        { label: 'New Arrivals', href: '/products?category=new-arrivals' },
+        { label: 'Best Sellers', href: '/products?category=best-sellers' },
+        { label: 'Sale Items', href: '/sale' },
+        { label: 'Wedding Collection', href: '/products?category=wedding' },
+        { label: 'Party Wear', href: '/products?category=party-wear' },
+      ]
+    },
+    {
+      title: 'Categories',
+      links: [
+        { label: 'Banarasi Silk', href: '/category/banarasi-silk' },
+        { label: 'Kanjeevaram Silk', href: '/category/kanjeevaram-silk' },
+        { label: 'Designer Sarees', href: '/category/designer-sarees' },
+        { label: 'Cotton Sarees', href: '/category/cotton-sarees' },
+        { label: 'Georgette Sarees', href: '/category/georgette-sarees' },
+        { label: 'Chiffon Sarees', href: '/category/chiffon-sarees' },
+      ]
+    },
+    {
+      title: 'Customer Service',
+      links: [
+        { label: 'Contact Us', href: '/contact' },
+        { label: 'Shipping Info', href: '/shipping' },
+        { label: 'Returns & Exchanges', href: '/returns' },
+        { label: 'Size Guide', href: '/size-guide' },
+        { label: 'Care Instructions', href: '/care-instructions' },
+        { label: 'FAQ', href: '/faq' },
+      ]
+    },
+    {
+      title: 'About Us',
+      links: [
+        { label: 'Our Story', href: '/about' },
+        { label: 'Craftsmanship', href: '/craftsmanship' },
+        { label: 'Sustainability', href: '/sustainability' },
+        { label: 'Press & Media', href: '/press' },
+        { label: 'Careers', href: '/careers' },
+        { label: 'Privacy Policy', href: '/privacy' },
+      ]
+    }
+  ];
+
+  const socialLinks = [
+    { icon: Facebook, href: '#', label: 'Facebook' },
+    { icon: Instagram, href: '#', label: 'Instagram' },
+    { icon: Twitter, href: '#', label: 'Twitter' },
+    { icon: Youtube, href: '#', label: 'YouTube' },
+  ];
+
+  const features = [
+    {
+      icon: Truck,
+      title: 'Free Shipping',
+      description: 'On orders above ₹2000'
+    },
+    {
+      icon: Shield,
+      title: 'Secure Payment',
+      description: '100% secure checkout'
+    },
+    {
+      icon: CreditCard,
+      title: 'Easy Returns',
+      description: '30-day return policy'
+    },
+    {
+      icon: Heart,
+      title: 'Quality Assured',
+      description: 'Premium craftsmanship'
+    }
+  ];
+
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+      {/* Features Section */}
+      <section className="border-b border-gray-700">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <motion.div
+                key={feature.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="text-center"
+              >
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl mb-4">
+                  <feature.icon size={24} className="text-white" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-300 text-sm">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Main Footer Content */}
-      <div className="container-custom py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Company Info */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+          {/* Brand Section */}
           <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-primary-800 rounded-full flex items-center justify-center">
-                <span className="text-white font-playfair font-bold text-sm">E</span>
-              </div>
-              <h3 className="font-playfair font-bold text-lg">Elegant Sarees</h3>
-            </div>
-            <p className="text-gray-300 mb-4 leading-relaxed">
-              Premium handwoven sarees for every occasion. From traditional Banarasi to modern designer pieces, 
-              we bring you the finest collection of authentic Indian sarees.
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <Youtube className="w-5 h-5" />
-              </a>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div>
-            <h4 className="font-poppins font-semibold text-lg mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/" className="text-gray-300 hover:text-white transition-colors">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link href="/about" className="text-gray-300 hover:text-white transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/silk-sarees" className="text-gray-300 hover:text-white transition-colors">
-                  Silk Sarees
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/cotton-sarees" className="text-gray-300 hover:text-white transition-colors">
-                  Cotton Sarees
-                </Link>
-              </li>
-              <li>
-                <Link href="/category/designer-sarees" className="text-gray-300 hover:text-white transition-colors">
-                  Designer Collection
-                </Link>
-              </li>
-              <li>
-                <Link href="/sale" className="text-gray-300 hover:text-white transition-colors">
-                  Sale
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Customer Service */}
-          <div>
-            <h4 className="font-poppins font-semibold text-lg mb-4">Customer Service</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/contact" className="text-gray-300 hover:text-white transition-colors">
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/track-order" className="text-gray-300 hover:text-white transition-colors">
-                  Track Order
-                </Link>
-              </li>
-              <li>
-                <Link href="/shipping" className="text-gray-300 hover:text-white transition-colors">
-                  Shipping Info
-                </Link>
-              </li>
-              <li>
-                <Link href="/returns" className="text-gray-300 hover:text-white transition-colors">
-                  Returns & Exchanges
-                </Link>
-              </li>
-              <li>
-                <Link href="/size-guide" className="text-gray-300 hover:text-white transition-colors">
-                  Size Guide
-                </Link>
-              </li>
-              <li>
-                <Link href="/care-instructions" className="text-gray-300 hover:text-white transition-colors">
-                  Care Instructions
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact Info */}
-          <div>
-            <h4 className="font-poppins font-semibold text-lg mb-4">Contact Info</h4>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <MapPin className="w-5 h-5 text-primary-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="text-gray-300">
-                    123 Fashion Street,<br />
-                    Mumbai, Maharashtra 400001<br />
-                    India
-                  </p>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h2 className="text-2xl font-serif font-bold text-gradient mb-4">
+                Dhanlaxmi Saree Sadan
+              </h2>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                Discover the timeless elegance of traditional Indian sarees. 
+                Handcrafted with love and premium materials for every special occasion.
+              </p>
+              
+              {/* Contact Info */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center space-x-3 text-gray-300">
+                  <Phone size={16} />
+                  <span>+91 98765 43210</span>
+                </div>
+                <div className="flex items-center space-x-3 text-gray-300">
+                  <Mail size={16} />
+                  <span>info@dhanlaxmisarees.com</span>
+                </div>
+                <div className="flex items-start space-x-3 text-gray-300">
+                  <MapPin size={16} className="mt-1" />
+                  <span>123 Fashion Street, Mumbai, Maharashtra 400001</span>
                 </div>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <a href="tel:+919876543210" className="text-gray-300 hover:text-white transition-colors">
-                  +91 98765 43210
-                </a>
+
+              {/* Social Links */}
+              <div className="flex space-x-4">
+                {socialLinks.map((social) => (
+                  <motion.a
+                    key={social.label}
+                    href={social.href}
+                    className="w-10 h-10 bg-gray-700 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 rounded-lg flex items-center justify-center transition-all duration-300"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    aria-label={social.label}
+                  >
+                    <social.icon size={18} />
+                  </motion.a>
+                ))}
               </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />
-                <a href="mailto:info@elegantsarees.com" className="text-gray-300 hover:text-white transition-colors">
-                  info@elegantsarees.com
-                </a>
-              </div>
-            </div>
-            
-            {/* Newsletter Signup */}
-            <div className="mt-6">
-              <h5 className="font-poppins font-medium mb-3">Newsletter</h5>
-              <div className="flex">
+            </motion.div>
+          </div>
+
+          {/* Footer Links */}
+          {footerSections.map((section, sectionIndex) => (
+            <motion.div
+              key={section.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: sectionIndex * 0.1 }}
+            >
+              <h3 className="text-lg font-semibold mb-4 text-white">
+                {section.title}
+              </h3>
+              <ul className="space-y-3">
+                {section.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-300 hover:text-amber-400 transition-colors duration-300 flex items-center group"
+                    >
+                      <ArrowRight size={12} className="mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* Newsletter Section */}
+      <section className="border-t border-gray-700">
+        <div className="container mx-auto px-4 py-12">
+          <div className="max-w-2xl mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <h3 className="text-2xl font-serif font-bold mb-4">
+                Stay Updated
+              </h3>
+              <p className="text-gray-300 mb-6">
+                Subscribe to our newsletter for exclusive offers, new arrivals, and styling tips.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
                 <input
                   type="email"
-                  placeholder="Your email"
-                  className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-400"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                 />
-                <button className="px-4 py-2 bg-primary-800 hover:bg-primary-700 text-white rounded-r-lg transition-colors">
+                <button className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium rounded-xl transition-all duration-300 transform hover:-translate-y-1">
                   Subscribe
                 </button>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Bottom Bar */}
-      <div className="border-t border-gray-800">
-        <div className="container-custom py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+      <div className="border-t border-gray-700">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
             <div className="text-gray-400 text-sm">
-              © 2024 Elegant Sarees. All rights reserved.
+              © {currentYear} Dhanlaxmi Saree Sadan. All rights reserved.
             </div>
-            <div className="flex space-x-6 text-sm">
-              <Link href="/privacy-policy" className="text-gray-400 hover:text-white transition-colors">
+            
+            <div className="flex items-center space-x-6 text-sm">
+              <Link href="/privacy" className="text-gray-400 hover:text-amber-400 transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms-of-service" className="text-gray-400 hover:text-white transition-colors">
+              <Link href="/terms" className="text-gray-400 hover:text-amber-400 transition-colors">
                 Terms of Service
               </Link>
-              <Link href="/shipping-policy" className="text-gray-400 hover:text-white transition-colors">
-                Shipping Policy
+              <Link href="/sitemap" className="text-gray-400 hover:text-amber-400 transition-colors">
+                Sitemap
               </Link>
-              <Link href="/refund-policy" className="text-gray-400 hover:text-white transition-colors">
-                Refund Policy
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust Badges */}
-      <div className="bg-gray-950 py-4">
-        <div className="container-custom">
-          <div className="flex flex-wrap justify-center items-center space-x-8 text-gray-400 text-sm">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">✓</span>
-              </div>
-              <span>100% Authentic</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">🚚</span>
-              </div>
-              <span>Free Shipping</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">↩</span>
-              </div>
-              <span>Easy Returns</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">🔒</span>
-              </div>
-              <span>Secure Payment</span>
             </div>
           </div>
         </div>

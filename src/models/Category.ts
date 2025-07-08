@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 
-export interface ICategory extends Document {
+export interface ICategory {
   name: string;
   slug: string;
   description: string;
@@ -11,44 +11,42 @@ export interface ICategory extends Document {
   updated_at: Date;
 }
 
-const CategorySchema: Schema = new Schema({
+const CategorySchema = new Schema<ICategory>({
   name: {
     type: String,
     required: true,
     trim: true,
-    maxlength: 100
   },
   slug: {
     type: String,
     required: true,
     unique: true,
     lowercase: true,
-    trim: true
+    index: true,
   },
   description: {
     type: String,
     required: true,
-    maxlength: 500
   },
   image: {
     type: String,
-    required: true
+    required: true,
   },
   product_count: {
     type: Number,
     default: 0,
-    min: 0
+    min: 0,
   },
   is_active: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 }, {
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
 
 // Indexes
-CategorySchema.index({ slug: 1 });
 CategorySchema.index({ is_active: 1 });
 
-export default mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema); 
+export const CategoryModel: Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+export default CategoryModel; 

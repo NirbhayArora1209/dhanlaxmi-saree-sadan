@@ -4,68 +4,73 @@
 
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/dhanlaxmi-saree-sadan';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/saree-store';
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
 }
 
-interface Connection {
-  isConnected?: number;
+interface GlobalWithMongoose {
+  mongoose: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+  };
 }
 
-const connection: Connection = {};
+declare const global: GlobalWithMongoose;
+
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 async function connectDB() {
-  if (connection.isConnected) {
-    return;
+  if (cached.conn) {
+    console.log('✅ Using cached database connection');
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    console.log('🔄 Connecting to MongoDB...');
+    const opts = {
+      bufferCommands: false,
+    };
+
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('✅ Successfully connected to MongoDB');
+      return mongoose;
+    }).catch((error) => {
+      console.error('❌ Failed to connect to MongoDB:', error.message);
+      throw error;
+    });
   }
 
   try {
-    const db = await mongoose.connect(MONGODB_URI);
-    connection.isConnected = db.connections[0].readyState;
-    console.log('✅ MongoDB connected successfully');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
-    throw error;
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error('❌ Database connection failed:', e);
+    throw e;
   }
+
+  return cached.conn;
 }
 
 async function disconnectDB() {
-  if (connection.isConnected) {
+  if (cached.conn) {
     await mongoose.disconnect();
-    connection.isConnected = 0;
+    cached.conn = null;
+    cached.promise = null;
     console.log('🔌 MongoDB disconnected');
   }
 }
 
-export { connectDB, disconnectDB };
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  await disconnectDB();
+  process.exit(0);
+});
 
-// Placeholder for collection operations
-export function collection(name: string) {
-  return {
-    find: async (query: any = {}) => {
-      console.log(`Finding documents in ${name}:`, query);
-      return [];
-    },
-    findOne: async (query: any = {}) => {
-      console.log(`Finding one document in ${name}:`, query);
-      return null;
-    },
-    insertOne: async (document: any) => {
-      console.log(`Inserting document in ${name}:`, document);
-      return { insertedId: 'mock-id' };
-    },
-    updateOne: async (filter: any, update: any) => {
-      console.log(`Updating document in ${name}:`, { filter, update });
-      return { modifiedCount: 1 };
-    },
-    deleteOne: async (filter: any) => {
-      console.log(`Deleting document in ${name}:`, filter);
-      return { deletedCount: 1 };
-    }
-  };
-}
-
-// Export singleton instance
-export const db = { connectDB, disconnectDB }; 
+export default connectDB;
+export { connectDB }; 

@@ -1,95 +1,114 @@
-import { Product, Category } from '@/types';
 import { NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 
-const API_BASE = '/api';
-
-// Generic fetch wrapper with error handling
-async function fetchAPI<T>(endpoint: string): Promise<T> {
-  try {
-    const response = await fetch(`${API_BASE}${endpoint}`);
-    
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
-    }
-    
-    const result = await response.json();
-    
-    // Handle the new API response format
-    if (result.success && result.data !== undefined) {
-      return result.data;
-    }
-    
-    // Fallback for old format or direct data
-    return result;
-  } catch (error) {
-    console.error(`Failed to fetch ${endpoint}:`, error);
-    throw error;
-  }
-}
-
-// API functions
-export async function getProducts(): Promise<{ products: Product[], pagination: any }> {
-  return fetchAPI<{ products: Product[], pagination: any }>('/products');
-}
-
-export async function getCategories(): Promise<Category[]> {
-  return fetchAPI<Category[]>('/categories');
-}
-
-export async function getCart(): Promise<any[]> {
-  return fetchAPI<any[]>('/cart');
-}
-
-export async function getWishlist(): Promise<any[]> {
-  return fetchAPI<any[]>('/wishlist');
-}
-
+// API Response Types
 export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
-  message?: string;
   error?: string;
+  message?: string;
+  total?: number;
+  page?: number;
+  limit?: number;
+  totalPages?: number;
 }
 
-export function successResponse<T>(data: T, message?: string): NextResponse<ApiResponse<T>> {
-  return NextResponse.json({
+// Success Response Helper
+export function successResponse<T>(
+  data: T,
+  options?: {
+    total?: number;
+    page?: number;
+    limit?: number;
+    totalPages?: number;
+    message?: string;
+  }
+): NextResponse<ApiResponse<T>> {
+  const response: ApiResponse<T> = {
     success: true,
     data,
-    message
-  });
+    ...options,
+  };
+
+  return NextResponse.json(response);
 }
 
-export function errorResponse(message: string, status: number = 400): NextResponse<ApiResponse> {
-  return NextResponse.json({
+// Error Response Helper
+export function errorResponse(
+  error: string | Error,
+  status: number = 500,
+  message?: string
+): NextResponse<ApiResponse> {
+  const errorMessage = typeof error === 'string' ? error : error.message;
+  
+  const response: ApiResponse = {
     success: false,
-    error: message
-  }, { status });
+    error: errorMessage,
+    message: message || errorMessage,
+  };
+
+  return NextResponse.json(response, { status });
 }
 
-export function serverErrorResponse(message: string = 'Internal server error'): NextResponse<ApiResponse> {
-  return NextResponse.json({
-    success: false,
-    error: message
-  }, { status: 500 });
+// Validation Error Handler
+export function handleValidationError(error: ZodError): NextResponse<ApiResponse> {
+  const errorMessage = error.errors.map(err => err.message).join(', ');
+  return errorResponse('Validation failed', 400, errorMessage);
 }
 
-export function notFoundResponse(message: string = 'Resource not found'): NextResponse<ApiResponse> {
-  return NextResponse.json({
-    success: false,
-    error: message
-  }, { status: 404 });
+// Database Error Handler
+export function handleDatabaseError(error: any): NextResponse<ApiResponse> {
+  console.error('Database error:', error);
+  
+  if (error.code === 11000) {
+    return errorResponse('Duplicate entry', 409, 'This record already exists');
+  }
+  
+  if (error.name === 'ValidationError') {
+    return errorResponse('Validation failed', 400, error.message);
+  }
+  
+  if (error.name === 'CastError') {
+    return errorResponse('Invalid ID format', 400, 'The provided ID is not valid');
+  }
+  
+  return errorResponse('Database error', 500, 'An error occurred while processing your request');
 }
 
-export function unauthorizedResponse(message: string = 'Unauthorized'): NextResponse<ApiResponse> {
-  return NextResponse.json({
-    success: false,
-    error: message
-  }, { status: 401 });
+// Query Parameters Helper
+export function parseQueryParams(url: string) {
+  const { searchParams } = new URL(url);
+  
+  return {
+    page: Math.max(1, parseInt(searchParams.get('page') || '1')),
+    limit: Math.min(Math.max(1, parseInt(searchParams.get('limit') || '12')), 50), // Min 1, Max 50 items per page
+    search: searchParams.get('search') || '',
+    category: searchParams.get('category') || '',
+    minPrice: searchParams.get('minPrice') ? parseFloat(searchParams.get('minPrice')!) : undefined,
+    maxPrice: searchParams.get('maxPrice') ? parseFloat(searchParams.get('maxPrice')!) : undefined,
+    sort: searchParams.get('sort') || 'created_at',
+    order: searchParams.get('order') === 'asc' ? 1 : -1,
+    featured: searchParams.get('featured') === 'true',
+    active: searchParams.get('active') !== 'false', // Default to true
+  };
 }
 
-export function forbiddenResponse(message: string = 'Forbidden'): NextResponse<ApiResponse> {
-  return NextResponse.json({
-    success: false,
-    error: message
-  }, { status: 403 });
-} 
+// Pagination Helper
+export function getPaginationInfo(page: number, limit: number, total: number) {
+  const totalPages = Math.ceil(total / limit);
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
+  
+  return {
+    page,
+    limit,
+    total,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+    nextPage: hasNextPage ? page + 1 : null,
+    prevPage: hasPrevPage ? page - 1 : null,
+  };
+}
+
+ 

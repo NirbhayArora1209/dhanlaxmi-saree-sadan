@@ -1,10 +1,14 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Model } from 'mongoose';
 
-export interface IProduct extends Document {
+export interface IProduct {
   name: string;
   description: string;
   category: string;
-  images: string[];
+  images: {
+    url: string;
+    view_type: 'front' | 'back' | 'side' | 'drape' | 'flat' | 'mannequin' | 'close-up' | 'detail';
+    alt_text?: string;
+  }[];
   pricing: {
     base_price: number;
     selling_price: number;
@@ -31,109 +35,120 @@ export interface IProduct extends Document {
   updated_at: Date;
 }
 
-const ProductSchema: Schema = new Schema({
+const ProductSchema = new Schema<IProduct>({
   name: {
     type: String,
     required: true,
     trim: true,
-    maxlength: 200
   },
   description: {
     type: String,
     required: true,
-    maxlength: 1000
   },
   category: {
     type: String,
     required: true,
-    enum: ['silk-sarees', 'cotton-sarees', 'designer-sarees', 'wedding-sarees', 'party-wear']
+    index: true,
   },
   images: [{
-    type: String,
-    required: true
+    url: {
+      type: String,
+      required: true,
+    },
+    view_type: {
+      type: String,
+      enum: ['front', 'back', 'side', 'drape', 'flat', 'mannequin', 'close-up', 'detail'],
+      default: 'front',
+    },
+    alt_text: {
+      type: String,
+      default: '',
+    },
   }],
   pricing: {
     base_price: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
     selling_price: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
     discount_percentage: {
       type: Number,
       default: 0,
       min: 0,
-      max: 100
-    }
+      max: 100,
+    },
   },
   specifications: {
     fabric: {
       type: String,
-      required: true
+      required: true,
     },
     occasion: {
       type: String,
-      required: true
+      required: true,
     },
     length: {
       type: Number,
       required: true,
-      min: 5,
-      max: 10
+      min: 0,
     },
     blouse_included: {
       type: Boolean,
-      default: false
+      default: false,
     },
     care_instructions: {
       type: String,
-      default: 'Dry clean only'
-    }
+      required: true,
+    },
   },
   ratings: {
     average_rating: {
       type: Number,
       default: 0,
       min: 0,
-      max: 5
+      max: 5,
     },
     total_reviews: {
       type: Number,
       default: 0,
-      min: 0
-    }
+      min: 0,
+    },
   },
   inventory: {
     available_stock: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
     },
     sku: {
       type: String,
       required: true,
-      unique: true
-    }
+      unique: true,
+    },
   },
   is_featured: {
     type: Boolean,
-    default: false
+    default: false,
   },
   is_active: {
     type: Boolean,
-    default: true
-  }
+    default: true,
+  },
 }, {
-  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
 });
 
 // Indexes for better query performance
 ProductSchema.index({ category: 1, is_active: 1 });
 ProductSchema.index({ is_featured: 1, is_active: 1 });
+ProductSchema.index({ 'pricing.selling_price': 1 });
+ProductSchema.index({ 'ratings.average_rating': -1 });
 ProductSchema.index({ name: 'text', description: 'text' });
 
-export default mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema); 
+export const ProductModel: Model<IProduct> = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
+export default ProductModel; 

@@ -1,84 +1,105 @@
-import { NextRequest } from 'next/server';
-import { connectDB } from '@/lib/db';
-import Product from '@/models/Product';
-import { successResponse, errorResponse, notFoundResponse, serverErrorResponse } from '@/lib/api';
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/db';
+import mongoose from 'mongoose';
+import ProductModel from '@/models/Product';
+import { 
+  successResponse, 
+  errorResponse, 
+  handleDatabaseError 
+} from '@/lib/api';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+  { params }: { params: { id: string } }
+): Promise<Response> {
   try {
     await connectDB();
     
-    const { id } = await params;
-    const product = await Product.findById(id).lean();
-
+    const product = await ProductModel.findById(params.id).lean();
+    
     if (!product) {
-      return notFoundResponse('Product not found');
+      return NextResponse.json(
+        { success: false, error: 'Product not found' },
+        { status: 404 }
+      );
+    }
+    
+    if (!product.is_active) {
+      return NextResponse.json(
+        { success: false, error: 'Product is not available' },
+        { status: 404 }
+      );
     }
 
-    return successResponse(product);
-
+    // Sanitize images: remove or convert _id to string
+    if (Array.isArray(product.images)) {
+      product.images = product.images.map(({ _id, ...img }) => ({ ...img }));
+    }
+    
+    return NextResponse.json({
+      success: true,
+      data: product,
+    });
   } catch (error) {
     console.error('Error fetching product:', error);
-    return serverErrorResponse('Failed to fetch product');
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch product' },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<Response> {
   try {
     await connectDB();
     
+    const { id: productId } = params;
     const body = await request.json();
     
-    const product = await Product.findByIdAndUpdate(
-      params.id,
-      { ...body, updated_at: new Date() },
+    // Check if product exists
+    const existingProduct = await ProductModel.findById(productId);
+    if (!existingProduct) {
+      return errorResponse('Product not found', 404, 'The requested product does not exist');
+    }
+    
+    // Update product
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
+      productId,
+      { ...body },
       { new: true, runValidators: true }
     );
-
-    if (!product) {
-      return notFoundResponse('Product not found');
-    }
-
-    return successResponse(product, 'Product updated successfully');
-
-  } catch (error: any) {
-    console.error('Error updating product:', error);
     
-    if (error.name === 'ValidationError') {
-      const messages = Object.values(error.errors).map((err: any) => err.message);
-      return errorResponse(messages.join(', '));
-    }
-
-    return serverErrorResponse('Failed to update product');
+    return successResponse(updatedProduct, { message: 'Product updated successfully' });
+    
+  } catch (error) {
+    return handleDatabaseError(error);
   }
 }
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
-) {
+): Promise<Response> {
   try {
     await connectDB();
     
-    const product = await Product.findByIdAndUpdate(
-      params.id,
-      { is_active: false },
-      { new: true }
-    );
-
-    if (!product) {
-      return notFoundResponse('Product not found');
+    const { id: productId } = params;
+    
+    // Check if product exists
+    const existingProduct = await ProductModel.findById(productId);
+    if (!existingProduct) {
+      return errorResponse('Product not found', 404, 'The requested product does not exist');
     }
-
-    return successResponse(null, 'Product deleted successfully');
-
+    
+    // Soft delete by setting is_active to false
+    await ProductModel.findByIdAndUpdate(productId, { is_active: false });
+    
+    return successResponse({}, { message: 'Product deleted successfully' });
+    
   } catch (error) {
-    console.error('Error deleting product:', error);
-    return serverErrorResponse('Failed to delete product');
+    return handleDatabaseError(error);
   }
 } 
