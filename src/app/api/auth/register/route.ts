@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { connectDB } from '@/lib/db';
+import connectDB from '@/lib/db';
 import mongoose from 'mongoose';
 import { IUser } from '@/models/User';
 import { generateToken } from '@/lib/auth';

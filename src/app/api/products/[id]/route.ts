@@ -31,9 +31,13 @@ export async function GET(
       );
     }
 
-    // Sanitize images: remove or convert _id to string
+    // Sanitize images: ensure they have proper structure
     if (Array.isArray(product.images)) {
-      product.images = product.images.map(({ _id, ...img }) => ({ ...img }));
+      product.images = product.images.map((img: any) => ({
+        url: img.url,
+        view_type: img.view_type,
+        alt_text: img.alt_text
+      }));
     }
     
     return NextResponse.json({

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IWishlistItem {
-  product_id: string;
+  product_id: mongoose.Types.ObjectId;
   name: string;
   price: number;
   image: string;
@@ -9,7 +9,7 @@ export interface IWishlistItem {
 }
 
 export interface IWishlist extends Document {
-  user_id: string;
+  user_id: mongoose.Types.ObjectId;
   items: IWishlistItem[];
   created_at: Date;
   updated_at: Date;
@@ -17,7 +17,8 @@ export interface IWishlist extends Document {
 
 const WishlistItemSchema = new Schema<IWishlistItem>({
   product_id: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'Product',
     required: true,
   },
   name: {
@@ -41,8 +42,10 @@ const WishlistItemSchema = new Schema<IWishlistItem>({
 
 const WishlistSchema = new Schema<IWishlist>({
   user_id: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
+    index: true,
   },
   items: [WishlistItemSchema],
 }, {
@@ -52,4 +55,6 @@ const WishlistSchema = new Schema<IWishlist>({
 // Indexes
 WishlistSchema.index({ user_id: 1 });
 
-export default mongoose.models.Wishlist || mongoose.model<IWishlist>('Wishlist', WishlistSchema); 
+const WishlistModel: mongoose.Model<IWishlist> = mongoose.models.Wishlist || mongoose.model<IWishlist>('Wishlist', WishlistSchema);
+
+export default WishlistModel; 

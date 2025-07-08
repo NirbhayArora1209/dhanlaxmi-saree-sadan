@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ICartItem {
-  product_id: string;
+  product_id: mongoose.Types.ObjectId;
   name: string;
   price: number;
   quantity: number;
@@ -9,7 +9,7 @@ export interface ICartItem {
 }
 
 export interface ICart extends Document {
-  user_id: string;
+  user_id: mongoose.Types.ObjectId;
   items: ICartItem[];
   total_amount: number;
   created_at: Date;
@@ -18,7 +18,8 @@ export interface ICart extends Document {
 
 const CartItemSchema = new Schema<ICartItem>({
   product_id: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'Product',
     required: true,
   },
   name: {
@@ -43,8 +44,10 @@ const CartItemSchema = new Schema<ICartItem>({
 
 const CartSchema = new Schema<ICart>({
   user_id: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
+    index: true,
   },
   items: [CartItemSchema],
   total_amount: {
@@ -67,4 +70,6 @@ CartSchema.pre('save', function(next) {
 // Indexes
 CartSchema.index({ user_id: 1 });
 
-export default mongoose.models.Cart || mongoose.model<ICart>('Cart', CartSchema); 
+const CartModel: mongoose.Model<ICart> = mongoose.models.Cart || mongoose.model<ICart>('Cart', CartSchema);
+
+export default CartModel; 

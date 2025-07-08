@@ -349,5 +349,4 @@ describe('Products Page', () => {
       })
     })
   })
-}) 
-}) 
+})

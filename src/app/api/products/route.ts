@@ -170,12 +170,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const featured = searchParams.get('featured');
+    const search = searchParams.get('search');
     const limit = parseInt(searchParams.get('limit') || '12');
     const page = parseInt(searchParams.get('page') || '1');
     const sort = searchParams.get('sort') || 'created_at';
     const order = searchParams.get('order') || 'desc';
     
-    console.log('🔄 Products API: Query params:', { category, featured, limit, page, sort, order });
+    console.log('🔄 Products API: Query params:', { category, featured, search, limit, page, sort, order });
     
     let products = [];
     let total = 0;
@@ -193,6 +194,16 @@ export async function GET(request: NextRequest) {
       
       if (featured === 'true') {
         query.is_featured = true;
+      }
+      
+      if (search) {
+        query.$or = [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { category: { $regex: search, $options: 'i' } },
+          { 'specifications.fabric': { $regex: search, $options: 'i' } },
+          { 'specifications.occasion': { $regex: search, $options: 'i' } }
+        ];
       }
       
       // Build sort object
@@ -228,6 +239,16 @@ export async function GET(request: NextRequest) {
       
       if (featured === 'true') {
         filteredProducts = filteredProducts.filter(p => p.is_featured);
+      }
+      
+      if (search) {
+        filteredProducts = filteredProducts.filter(p => 
+          p.name.toLowerCase().includes(search.toLowerCase()) ||
+          p.description.toLowerCase().includes(search.toLowerCase()) ||
+          p.category.toLowerCase().includes(search.toLowerCase()) ||
+          p.specifications.fabric.toLowerCase().includes(search.toLowerCase()) ||
+          p.specifications.occasion.toLowerCase().includes(search.toLowerCase())
+        );
       }
       
       total = filteredProducts.length;

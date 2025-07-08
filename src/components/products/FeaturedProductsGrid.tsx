@@ -4,11 +4,12 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Star, Heart, ShoppingBag } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { formatPrice } from "@/lib/utils";
+import { useStore } from "@/context/StoreContext";
 
 interface ProductType {
   _id: string;
@@ -32,6 +33,31 @@ interface FeaturedProductsGridProps {
 }
 
 const FeaturedProductsGrid: React.FC<FeaturedProductsGridProps> = ({ featuredProducts }) => {
+  const store = useStore();
+
+  const handleAddToCart = (product: ProductType) => {
+    store.addToCart({
+      _id: product._id,
+      name: product.name,
+      price: product.pricing.selling_price,
+      image: product.images[0]?.url || '/images/products/placeholder.jpg',
+      quantity: 1
+    });
+  };
+
+  const handleAddToWishlist = (product: ProductType) => {
+    store.addToWishlist({
+      _id: product._id,
+      name: product.name,
+      price: product.pricing.selling_price,
+      image: product.images[0]?.url || '/images/products/placeholder.jpg'
+    });
+  };
+
+  const isInWishlist = (productId: string) => {
+    return store.wishlist.some(item => item._id === productId);
+  };
+
   return (
     <section className="section bg-premium">
       <div className="container mx-auto px-4">
@@ -74,6 +100,32 @@ const FeaturedProductsGrid: React.FC<FeaturedProductsGridProps> = ({ featuredPro
                         {product.pricing.discount_percentage}% OFF
                       </Badge>
                     )}
+                    
+                    {/* Quick Actions */}
+                    <div className="absolute top-4 right-4 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToWishlist(product);
+                        }}
+                        className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
+                          isInWishlist(product._id) 
+                            ? 'bg-red-500 text-white' 
+                            : 'bg-white/80 text-gray-700 hover:bg-red-500 hover:text-white'
+                        }`}
+                      >
+                        <Heart size={16} fill={isInWishlist(product._id) ? 'white' : 'none'} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleAddToCart(product);
+                        }}
+                        className="p-2 rounded-full bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-indigo-600 hover:text-white transition-colors"
+                      >
+                        <ShoppingBag size={16} />
+                      </button>
+                    </div>
                   </div>
 
                   <CardContent className="p-6">

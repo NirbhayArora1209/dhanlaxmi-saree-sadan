@@ -160,10 +160,10 @@ export function StoreProvider({ children }: StoreProviderProps) {
     dispatch({ type: 'SET_ERROR', payload: { key: 'products', value: null } });
     try {
       const response = await productsApi.getProducts(params);
-      if (response.success) {
+      if (response && response.data) {
         dispatch({ type: 'SET_PRODUCTS', payload: response.data });
       } else {
-        dispatch({ type: 'SET_ERROR', payload: { key: 'products', value: response.message || 'Product error' } });
+        dispatch({ type: 'SET_ERROR', payload: { key: 'products', value: 'Failed to fetch products' } });
       }
     } catch (error: any) {
       dispatch({ type: 'SET_ERROR', payload: { key: 'products', value: error.message || 'Network error' } });

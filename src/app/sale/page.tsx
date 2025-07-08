@@ -12,8 +12,9 @@ import ErrorBoundary from '@/components/ui/ErrorBoundary';
 import { Product } from '@/types';
 
 const SalePage = () => {
-  const { data: products, loading, error } = useProducts();
-  const saleProducts = (products || []).filter((p: Product) => p.pricing.discount_percentage > 0);
+  const { data: productsData, loading, error } = useProducts();
+  const products = Array.isArray(productsData) ? productsData : (productsData?.products || []);
+  const saleProducts = products.filter((p: Product) => p.pricing.discount_percentage > 0);
 
   const categories = [
     { _id: '1', name: 'Silk Sarees', slug: 'silk-sarees', product_count: 3 },

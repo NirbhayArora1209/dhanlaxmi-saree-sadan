@@ -3,7 +3,6 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import connectDB from '@/lib/db';
 import ProductModel from '@/models/Product';
-import CategoryModel from '@/models/Category';
 import HeroSlider from '@/components/layout/HeroSlider';
 import FeaturedProductsGrid from '@/components/products/FeaturedProductsGrid';
 import FeaturesGrid from '@/components/layout/FeaturesGrid';
@@ -24,26 +23,53 @@ async function getFeaturedProducts() {
   }
 }
 
-async function getCategories() {
-  try {
-    await connectDB();
-    const categories = await CategoryModel.find({ is_active: true }).lean();
-    return categories.map(category => ({
-      name: category.name,
-      image: category.image,
-      href: `/category/${category.slug}`,
-      productCount: category.product_count || 0
-    }));
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
-}
-
 export default async function HomePage() {
   const featuredProducts = await getFeaturedProducts();
-  const categories = await getCategories();
-
+  // Categories can be static or fetched if needed
+  const categories = [
+    {
+      name: "Banarasi Silk",
+      image: "/images/products/categories/banarasi-silk.jpg",
+      href: "/category/banarasi-silk",
+      productCount: 45
+    },
+    {
+      name: "Kanjeevaram Silk",
+      image: "/images/products/categories/kanjeevaram-silk.jpg",
+      href: "/category/kanjeevaram-silk",
+      productCount: 32
+    },
+    {
+      name: "Cotton Sarees",
+      image: "/images/products/categories/cotton-sarees.jpg",
+      href: "/category/cotton-sarees",
+      productCount: 20
+    },
+    {
+      name: "Designer Sarees",
+      image: "/images/products/categories/designer-sarees.jpg",
+      href: "/category/designer-sarees",
+      productCount: 28
+    },
+    {
+      name: "Party Wear",
+      image: "/images/products/categories/party-wear.jpg",
+      href: "/category/party-wear",
+      productCount: 15
+    },
+    {
+      name: "Silk Sarees",
+      image: "/images/products/categories/silk-sarees.jpg",
+      href: "/category/silk-sarees",
+      productCount: 40
+    },
+    {
+      name: "Wedding Sarees",
+      image: "/images/products/categories/wedding-sarees.jpg",
+      href: "/category/wedding-sarees",
+      productCount: 56
+    }
+  ];
   const heroSlides = [
     {
       title: "Timeless Elegance in Every Drape",
@@ -95,11 +121,20 @@ export default async function HomePage() {
     <div className="min-h-screen">
       <Header activePage="home" />
       <HeroSlider heroSlides={heroSlides} />
+
+      {/* Features Section */}
       <FeaturesGrid features={features} />
+
+      {/* Categories Section */}
       <CategoriesGrid categories={categories} />
+
+      {/* Featured Products Section */}
       <FeaturedProductsGrid featuredProducts={featuredProducts} />
+
+      {/* CTA Section */}
       <CtaSection />
+
       <Footer />
     </div>
   );
-}
+} 

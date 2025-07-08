@@ -41,8 +41,10 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
   }, []);
 
   const handleSearch = (query: string) => {
-    console.log('Search query:', query);
-    // Implement search functionality
+    if (query.trim()) {
+      // Redirect to products page with search query
+      window.location.href = `/products?search=${encodeURIComponent(query.trim())}`;
+    }
   };
 
   const navigationItems = [

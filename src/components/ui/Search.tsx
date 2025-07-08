@@ -33,8 +33,11 @@ const Search: React.FC<SearchProps> = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setIsExpanded(false);
-        setShowSuggestions(false);
+        // Add a small delay to allow suggestion clicks to register
+        setTimeout(() => {
+          setIsExpanded(false);
+          setShowSuggestions(false);
+        }, 200);
       }
     };
 
@@ -49,7 +52,10 @@ const Search: React.FC<SearchProps> = ({
       );
       setFilteredSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
-      debouncedSearch(query);
+      // Only trigger debounced search if there are no suggestions or filtered suggestions
+      if (filtered.length === 0) {
+        debouncedSearch(query);
+      }
     } else {
       setFilteredSuggestions([]);
       setShowSuggestions(false);
