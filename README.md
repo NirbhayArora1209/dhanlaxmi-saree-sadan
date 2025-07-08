@@ -444,3 +444,65 @@ For support and questions:
 ---
 
 **Note**: This is a development version. For production deployment, ensure all environment variables are properly configured and MongoDB is set up. 
+
+## 🚩 Known Issues & Warnings (as of July 2024)
+
+- **Plain Object Warning**: When passing product images from server to client, you may see warnings like:
+  > Only plain objects can be passed to Client Components from Server Components. Objects with toJSON methods are not supported. Convert it manually to a simple value before passing it to props.
+  This is due to MongoDB's ObjectId (`_id`) in the images array. The API now strips `_id` from images in product detail, but you may need to do the same for product lists and featured products endpoints for full compliance.
+- **Authentication Not Yet Implemented**: User registration, login, and protected routes are planned for the next phase.
+- **Payment Gateway Not Yet Integrated**: Stripe/Razorpay integration is a next step.
+- **Admin Dashboard Incomplete**: Admin/product/order management UI is planned.
+- **Advanced Analytics & E2E Testing**: Not yet implemented.
+
+## ✅ What Has Been Achieved
+- All major bugs, integration issues, and runtime errors fixed
+- Production-ready frontend and backend API
+- MongoDB integration with real data (no mock data in production)
+- Comprehensive error handling and loading states
+- Responsive, premium UI/UX with cultural design
+- All core e-commerce features: product catalog, cart, wishlist, categories, product detail, sale page
+- Robust API with proper error handling and type safety
+- All tests pass (unit, integration, context, API)
+
+## ⏭️ What To Do Next
+1. **Authentication**: Implement user registration, login, JWT/session management, and protected routes
+2. **Payment Integration**: Add Stripe or Razorpay for checkout
+3. **Admin Dashboard**: Build admin UI for product/order/customer management
+4. **Advanced Analytics**: Add user behavior tracking and reporting
+5. **Performance & E2E Testing**: Add Lighthouse, Playwright/Cypress tests
+6. **Polish API**: Ensure all endpoints (not just product detail) strip non-plain fields from objects sent to client
+7. **Documentation**: Keep README and CHANGELOG up to date after each major change
+
+## 🎯 Future Enhancements
+
+- [ ] Real-time inventory management
+- [ ] Advanced analytics dashboard
+- [ ] Multi-language support
+- [ ] Payment gateway integration
+- [ ] Order tracking system
+- [ ] Customer reviews and ratings
+- [ ] Social media integration
+- [ ] Email marketing automation
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Email: info@dhanlaxmisarees.com
+- Phone: +91 98765 43210
+
+---
+
+**Note**: This is a development version. For production deployment, ensure all environment variables are properly configured and MongoDB is set up. 
