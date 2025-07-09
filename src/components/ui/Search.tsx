@@ -25,6 +25,7 @@ const Search: React.FC<SearchProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +53,7 @@ const Search: React.FC<SearchProps> = ({
       );
       setFilteredSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
+      setSelectedIndex(-1); // Reset selection when suggestions change
       // Only trigger debounced search if there are no suggestions or filtered suggestions
       if (filtered.length === 0) {
         debouncedSearch(query);
@@ -59,11 +61,47 @@ const Search: React.FC<SearchProps> = ({
     } else {
       setFilteredSuggestions([]);
       setShowSuggestions(false);
+      setSelectedIndex(-1);
     }
   }, [query, suggestions, debouncedSearch]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || filteredSuggestions.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev < filteredSuggestions.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev > 0 ? prev - 1 : filteredSuggestions.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && filteredSuggestions[selectedIndex]) {
+          handleSuggestionClick(filteredSuggestions[selectedIndex]);
+        } else if (query.trim()) {
+          onSearch(query);
+          setShowSuggestions(false);
+          setIsExpanded(false);
+        }
+        break;
+      case 'Escape':
+        setShowSuggestions(false);
+        setIsExpanded(false);
+        setSelectedIndex(-1);
+        inputRef.current?.blur();
+        break;
+    }
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -130,6 +168,7 @@ const Search: React.FC<SearchProps> = ({
               type="text"
               value={query}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               onFocus={() => {
                 setIsExpanded(true);
                 if (query.trim()) setShowSuggestions(true);
@@ -179,12 +218,17 @@ const Search: React.FC<SearchProps> = ({
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="px-4 py-3 hover:bg-amber-50 cursor-pointer transition-colors duration-200 first:rounded-t-2xl last:rounded-b-2xl"
+                className={`px-4 py-3 cursor-pointer transition-colors duration-200 first:rounded-t-2xl last:rounded-b-2xl ${
+                  index === selectedIndex 
+                    ? 'bg-amber-100 text-amber-900' 
+                    : 'hover:bg-amber-50 text-foreground'
+                }`}
                 onClick={() => handleSuggestionClick(suggestion)}
+                onMouseEnter={() => setSelectedIndex(index)}
               >
                 <div className="flex items-center">
                   <SearchIcon size={16} className="text-muted-foreground mr-3" />
-                  <span className="text-foreground">{suggestion}</span>
+                  <span>{suggestion}</span>
                 </div>
               </motion.div>
             ))}

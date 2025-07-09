@@ -1,6 +1,7 @@
 "use client";
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { 
   Facebook, 
@@ -133,9 +134,18 @@ export default function Footer() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h2 className="text-2xl font-serif font-bold text-gradient mb-4">
-                Dhanlaxmi Saree Sadan
-              </h2>
+              <div className="flex items-center space-x-3 mb-4">
+                <Image
+                  src="/images/Logo.png"
+                  alt="Dhanlaxmi Saree Sadan"
+                  width={40}
+                  height={40}
+                  className="w-10 h-10 object-contain"
+                />
+                <h2 className="text-2xl font-serif font-bold text-gradient">
+                  Dhanlaxmi Saree Sadan
+                </h2>
+              </div>
               <p className="text-gray-300 mb-6 leading-relaxed">
                 Discover the timeless elegance of traditional Indian sarees. 
                 Handcrafted with love and premium materials for every special occasion.

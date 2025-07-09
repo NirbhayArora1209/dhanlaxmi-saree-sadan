@@ -94,7 +94,7 @@ const ProductGrid: React.FC<ProductGridProps> = ({
                 <img
                   src={product.images[0]?.url || '/images/products/placeholder.jpg'}
                   alt={product.images[0]?.alt_text || product.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
                   loading="lazy"
                 />
                 

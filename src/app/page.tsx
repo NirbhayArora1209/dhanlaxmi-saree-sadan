@@ -10,6 +10,9 @@ import FeaturesGrid from '@/components/layout/FeaturesGrid';
 import CategoriesGrid from '@/components/layout/CategoriesGrid';
 import CtaSection from '@/components/layout/CtaSection';
 
+// Add caching to improve performance
+export const revalidate = 3600; // Revalidate every hour
+
 async function getFeaturedProducts() {
   try {
     await connectDB();
@@ -28,12 +31,25 @@ async function getCategories() {
   try {
     await connectDB();
     const categories = await CategoryModel.find({ is_active: true }).lean();
-    return categories.map(category => ({
-      name: category.name,
-      image: category.image,
-      href: `/category/${category.slug}`,
-      productCount: category.product_count || 0
-    }));
+    
+    // Calculate actual product counts for each category
+    const categoriesWithCounts = await Promise.all(
+      categories.map(async (category) => {
+        const productCount = await ProductModel.countDocuments({
+          category: category.slug,
+          is_active: true
+        });
+        
+        return {
+          name: category.name,
+          image: category.image,
+          href: `/category/${category.slug}`,
+          productCount: productCount
+        };
+      })
+    );
+    
+    return categoriesWithCounts;
   } catch (error) {
     console.error('Error fetching categories:', error);
     return [];
@@ -41,8 +57,14 @@ async function getCategories() {
 }
 
 export default async function HomePage() {
-  const featuredProducts = await getFeaturedProducts();
-  const categories = await getCategories();
+  // Load data in parallel for better performance
+  const [featuredProducts, categories] = await Promise.allSettled([
+    getFeaturedProducts(),
+    getCategories()
+  ]);
+
+  const resolvedFeaturedProducts = featuredProducts.status === 'fulfilled' ? featuredProducts.value : [];
+  const resolvedCategories = categories.status === 'fulfilled' ? categories.value : [];
 
   const heroSlides = [
     {
@@ -96,8 +118,8 @@ export default async function HomePage() {
       <Header activePage="home" />
       <HeroSlider heroSlides={heroSlides} />
       <FeaturesGrid features={features} />
-      <CategoriesGrid categories={categories} />
-      <FeaturedProductsGrid featuredProducts={featuredProducts} />
+      <CategoriesGrid categories={resolvedCategories} />
+      <FeaturedProductsGrid featuredProducts={resolvedFeaturedProducts} />
       <CtaSection />
       <Footer />
     </div>

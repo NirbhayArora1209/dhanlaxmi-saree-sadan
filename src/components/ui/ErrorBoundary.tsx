@@ -28,6 +28,11 @@ class ErrorBoundary extends Component<Props, State> {
   override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ error, errorInfo });
+    
+    // Special handling for webpack module errors
+    if (error.message && error.message.includes('Cannot find module')) {
+      console.warn('Webpack module resolution error detected. Consider clearing cache and restarting dev server.');
+    }
   }
 
   handleRetry = () => {

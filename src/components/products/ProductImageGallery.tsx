@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ProductImage } from '@/types';
 
 interface ProductImageGalleryProps {
@@ -42,7 +42,7 @@ export default function ProductImageGallery({ images, productName }: ProductImag
           src={images[currentImageIndex]?.url || ''}
           alt={images[currentImageIndex]?.alt_text || `${productName} - ${images[currentImageIndex]?.view_type || "view"} view`}
           fill
-          className="object-cover"
+          className="object-cover object-top"
           priority={currentImageIndex === 0}
         />
         
@@ -54,14 +54,14 @@ export default function ProductImageGallery({ images, productName }: ProductImag
               className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
               aria-label="Previous image"
             >
-              <ChevronLeftIcon className="w-6 h-6" />
+              <ChevronLeft className="w-6 h-6" />
             </button>
             <button
               onClick={nextImage}
               className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
               aria-label="Next image"
             >
-              <ChevronRightIcon className="w-6 h-6" />
+              <ChevronRight className="w-6 h-6" />
             </button>
           </>
         )}
@@ -92,7 +92,7 @@ export default function ProductImageGallery({ images, productName }: ProductImag
                 src={image.url || ''}
                 alt={image.alt_text || `${productName} - ${image.view_type || "view"} thumbnail`}
                 fill
-                className="object-cover"
+                className="object-cover object-top"
               />
             </button>
           ))}

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useProducts } from '@/hooks/useApiData';
-import EnhancedHeader from '@/components/layout/EnhancedHeader';
+import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductGrid from '@/components/products/ProductGrid';
 import ProductFilters from '@/components/products/ProductFilters';
@@ -26,7 +26,7 @@ const SalePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background-light">
-        <EnhancedHeader />
+        <Header activePage="sale" />
         <main className="pt-20">
           <div className="container-custom py-16">
             <LoadingSpinner size="large" text="Loading sale products..." />
@@ -40,7 +40,7 @@ const SalePage = () => {
   if (error) {
     return (
       <div className="min-h-screen bg-background-light">
-        <EnhancedHeader />
+        <Header activePage="sale" />
         <main className="pt-20">
           <div className="container-custom py-16 text-center">
             <h1 className="text-2xl font-bold text-red-600 mb-4">Error Loading Sale Products</h1>
@@ -61,7 +61,7 @@ const SalePage = () => {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background-light">
-        <EnhancedHeader />
+        <Header activePage="sale" />
         <main className="pt-20">
           <div className="container-custom py-8">
             <div className="mb-8 text-center">

@@ -10,48 +10,21 @@ import { Card, CardContent } from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { formatPrice } from "@/lib/utils";
 import { useStore } from "@/context/StoreContext";
-
-interface ProductType {
-  _id: string;
-  name: string;
-  images: { url: string }[];
-  pricing: {
-    selling_price: number;
-    base_price: number;
-    discount_percentage: number;
-  };
-  ratings: {
-    total_reviews: number;
-  };
-  inventory: {
-    available_stock: number;
-  };
-}
+import { Product } from "@/types";
 
 interface FeaturedProductsGridProps {
-  featuredProducts: ProductType[];
+  featuredProducts: Product[];
 }
 
 const FeaturedProductsGrid: React.FC<FeaturedProductsGridProps> = ({ featuredProducts }) => {
   const store = useStore();
 
-  const handleAddToCart = (product: ProductType) => {
-    store.addToCart({
-      _id: product._id,
-      name: product.name,
-      price: product.pricing.selling_price,
-      image: product.images[0]?.url || '/images/products/placeholder.jpg',
-      quantity: 1
-    });
+  const handleAddToCart = (product: Product) => {
+    store.addToCart(product, 1);
   };
 
-  const handleAddToWishlist = (product: ProductType) => {
-    store.addToWishlist({
-      _id: product._id,
-      name: product.name,
-      price: product.pricing.selling_price,
-      image: product.images[0]?.url || '/images/products/placeholder.jpg'
-    });
+  const handleAddToWishlist = (product: Product) => {
+    store.addToWishlist(product);
   };
 
   const isInWishlist = (productId: string) => {
@@ -88,7 +61,7 @@ const FeaturedProductsGrid: React.FC<FeaturedProductsGridProps> = ({ featuredPro
                       src={product.images[0]?.url || '/images/products/placeholder.jpg'}
                       alt={product.name}
                       fill
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, 25vw"
                     />
                     {/* Discount Badge */}

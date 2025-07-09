@@ -1,10 +1,39 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 
 export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // For now, just show an alert
+    alert('Thank you for your message! We will get back to you soon.');
+    setFormData({
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      subject: '',
+      message: ''
+    });
+  };
   return (
     <div className="min-h-screen">
       <Header activePage="contact" />
@@ -23,7 +52,7 @@ export default function ContactPage() {
             {/* Contact Form */}
             <div>
               <h2 className="text-2xl font-serif font-bold mb-6">Send us a message</h2>
-              <form className="space-y-6">
+              <form className="space-y-6" onSubmit={handleSubmit}>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="firstName" className="block text-sm font-medium mb-2">
@@ -32,8 +61,11 @@ export default function ContactPage() {
                     <input
                       type="text"
                       id="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
                       className="input w-full"
                       placeholder="Enter your first name"
+                      required
                     />
                   </div>
                   <div>
@@ -43,8 +75,11 @@ export default function ContactPage() {
                     <input
                       type="text"
                       id="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
                       className="input w-full"
                       placeholder="Enter your last name"
+                      required
                     />
                   </div>
                 </div>
@@ -55,8 +90,11 @@ export default function ContactPage() {
                   <input
                     type="email"
                     id="email"
+                    value={formData.email}
+                    onChange={handleChange}
                     className="input w-full"
                     placeholder="Enter your email"
+                    required
                   />
                 </div>
                 <div>
@@ -66,6 +104,8 @@ export default function ContactPage() {
                   <input
                     type="tel"
                     id="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
                     className="input w-full"
                     placeholder="Enter your phone number"
                   />
@@ -74,7 +114,7 @@ export default function ContactPage() {
                   <label htmlFor="subject" className="block text-sm font-medium mb-2">
                     Subject
                   </label>
-                  <select id="subject" className="input w-full">
+                  <select id="subject" value={formData.subject} onChange={handleChange} className="input w-full" required>
                     <option value="">Select a subject</option>
                     <option value="general">General Inquiry</option>
                     <option value="product">Product Information</option>
@@ -90,8 +130,11 @@ export default function ContactPage() {
                   <textarea
                     id="message"
                     rows={5}
+                    value={formData.message}
+                    onChange={handleChange}
                     className="input w-full"
                     placeholder="Enter your message"
+                    required
                   ></textarea>
                 </div>
                 <button type="submit" className="btn btn-primary w-full py-3 text-lg">

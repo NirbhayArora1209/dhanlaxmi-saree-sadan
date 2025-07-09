@@ -86,13 +86,13 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
     case 'REMOVE_FROM_CART':
       return {
         ...state,
-        cart: state.cart.filter(item => item.id !== action.payload),
+        cart: state.cart.filter(item => item.product_id !== action.payload),
       };
     case 'UPDATE_CART_ITEM':
       return {
         ...state,
         cart: state.cart.map(item =>
-          item.id === action.payload.id
+          item.product_id === action.payload.id
             ? { ...item, quantity: action.payload.quantity }
             : item
         ),
@@ -105,7 +105,7 @@ function storeReducer(state: StoreState, action: StoreAction): StoreState {
     case 'REMOVE_FROM_WISHLIST':
       return {
         ...state,
-        wishlist: state.wishlist.filter(item => item.id !== action.payload),
+        wishlist: state.wishlist.filter(item => item._id !== action.payload),
       };
     default:
       return state;
@@ -248,15 +248,54 @@ export function StoreProvider({ children }: StoreProviderProps) {
   const addToCart = async (product: Product, quantity: number = 1) => {
     dispatch({ type: 'SET_LOADING', payload: { key: 'cart', value: true } });
     dispatch({ type: 'SET_ERROR', payload: { key: 'cart', value: null } });
+    
     try {
-      const response = await cartApi.addToCart(product._id, quantity);
-      if (response.success) {
-        dispatch({ type: 'SET_CART', payload: response.data.items });
+      // Always use localStorage approach for consistent behavior
+      console.log('Adding to cart:', product.name, 'Quantity:', quantity);
+      console.log('Current cart before:', state.cart);
+      
+      // Check if item already exists
+      const existingItemIndex = state.cart.findIndex(item => item.product_id === product._id);
+      
+      let updatedCart;
+      if (existingItemIndex >= 0) {
+        // Update quantity
+        updatedCart = [...state.cart];
+        updatedCart[existingItemIndex].quantity += quantity;
+        console.log('Updated existing item:', updatedCart[existingItemIndex]);
       } else {
-        dispatch({ type: 'SET_ERROR', payload: { key: 'cart', value: response.message || 'Cart error' } });
+        // Add new item
+        const newItem = {
+          product_id: product._id,
+          name: product.name,
+          price: product.pricing.selling_price,
+          quantity: quantity,
+          image: product.images[0]?.url || '/images/products/placeholder.jpg'
+        };
+        updatedCart = [...state.cart, newItem];
+        console.log('Added new item:', newItem);
+      }
+      
+      console.log('Updated cart:', updatedCart);
+      dispatch({ type: 'SET_CART', payload: updatedCart });
+      
+      // Save to localStorage
+      try {
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+        console.log('Saved to localStorage');
+      } catch (error) {
+        console.warn('Failed to save cart to localStorage:', error);
+      }
+      
+      // Try to sync with API in background (non-blocking)
+      try {
+        await cartApi.addToCart(product._id, quantity);
+      } catch (error) {
+        console.warn('API sync failed (non-critical):', error);
       }
     } catch (error: any) {
-      dispatch({ type: 'SET_ERROR', payload: { key: 'cart', value: error.message || 'API Error' } });
+      console.error('Error adding to cart:', error);
+      dispatch({ type: 'SET_ERROR', payload: { key: 'cart', value: error.message } });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: { key: 'cart', value: false } });
     }
@@ -267,13 +306,17 @@ export function StoreProvider({ children }: StoreProviderProps) {
     dispatch({ type: 'SET_ERROR', payload: { key: 'cart', value: null } });
     try {
       const response = await cartApi.removeFromCart(productId);
-      if (response.success) {
-        dispatch({ type: 'SET_CART', payload: response.data.items });
-      } else {
-        dispatch({ type: 'SET_ERROR', payload: { key: 'cart', value: response.message || 'Cart error' } });
-      }
+      dispatch({ type: 'SET_CART', payload: response.items });
     } catch (error: any) {
-      dispatch({ type: 'SET_ERROR', payload: { key: 'cart', value: error.message || 'API Error' } });
+      // Fallback to local storage
+      console.warn('API failed, using local storage:', error);
+      dispatch({ type: 'REMOVE_FROM_CART', payload: productId });
+      try {
+        const updatedCart = state.cart.filter(item => item.product_id !== productId);
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+      } catch (error) {
+        console.warn('Failed to save cart to localStorage:', error);
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: { key: 'cart', value: false } });
     }
@@ -285,7 +328,17 @@ export function StoreProvider({ children }: StoreProviderProps) {
       const cartData = await cartApi.updateCartItem(productId, quantity);
       dispatch({ type: 'SET_CART', payload: cartData.items });
     } catch (error) {
-      console.error('Failed to update cart item:', error);
+      // Fallback to local storage
+      console.warn('API failed, using local storage:', error);
+      dispatch({ type: 'UPDATE_CART_ITEM', payload: { id: productId, quantity } });
+      try {
+        const updatedCart = state.cart.map(item =>
+          item.product_id === productId ? { ...item, quantity } : item
+        );
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+      } catch (error) {
+        console.warn('Failed to save cart to localStorage:', error);
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: { key: 'cart', value: false } });
     }
@@ -307,15 +360,40 @@ export function StoreProvider({ children }: StoreProviderProps) {
   const addToWishlist = async (product: Product) => {
     dispatch({ type: 'SET_LOADING', payload: { key: 'wishlist', value: true } });
     dispatch({ type: 'SET_ERROR', payload: { key: 'wishlist', value: null } });
+    
     try {
-      const response = await wishlistApi.addToWishlist(product._id);
-      if (response.success) {
-        dispatch({ type: 'SET_WISHLIST', payload: response.data.items });
+      console.log('Adding to wishlist:', product.name);
+      console.log('Current wishlist before:', state.wishlist);
+      
+      // Check if item already exists
+      const existingItem = state.wishlist.find(item => item._id === product._id);
+      
+      if (!existingItem) {
+        const updatedWishlist = [...state.wishlist, product];
+        console.log('Added new item to wishlist:', product);
+        console.log('Updated wishlist:', updatedWishlist);
+        
+        dispatch({ type: 'SET_WISHLIST', payload: updatedWishlist });
+        
+        try {
+          localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
+          console.log('Saved wishlist to localStorage');
+        } catch (error) {
+          console.warn('Failed to save wishlist to localStorage:', error);
+        }
+        
+        // Try to sync with API in background (non-blocking)
+        try {
+          await wishlistApi.addToWishlist(product._id);
+        } catch (error) {
+          console.warn('API sync failed (non-critical):', error);
+        }
       } else {
-        dispatch({ type: 'SET_ERROR', payload: { key: 'wishlist', value: response.message || 'Wishlist error' } });
+        console.log('Item already in wishlist');
       }
     } catch (error: any) {
-      dispatch({ type: 'SET_ERROR', payload: { key: 'wishlist', value: error.message || 'Wishlist API Error' } });
+      console.error('Error adding to wishlist:', error);
+      dispatch({ type: 'SET_ERROR', payload: { key: 'wishlist', value: error.message } });
     } finally {
       dispatch({ type: 'SET_LOADING', payload: { key: 'wishlist', value: false } });
     }
@@ -326,13 +404,12 @@ export function StoreProvider({ children }: StoreProviderProps) {
     dispatch({ type: 'SET_ERROR', payload: { key: 'wishlist', value: null } });
     try {
       const response = await wishlistApi.removeFromWishlist(productId);
-      if (response.success) {
-        dispatch({ type: 'SET_WISHLIST', payload: response.data.items });
-      } else {
-        dispatch({ type: 'SET_ERROR', payload: { key: 'wishlist', value: response.message || 'Wishlist error' } });
-      }
+      dispatch({ type: 'SET_WISHLIST', payload: response.items });
     } catch (error: any) {
-      dispatch({ type: 'SET_ERROR', payload: { key: 'wishlist', value: error.message || 'Wishlist API Error' } });
+      // Fallback to local storage
+      console.warn('API failed, using local storage:', error);
+      dispatch({ type: 'REMOVE_FROM_WISHLIST', payload: productId });
+      localStorage.setItem('wishlist', JSON.stringify(state.wishlist));
     } finally {
       dispatch({ type: 'SET_LOADING', payload: { key: 'wishlist', value: false } });
     }
@@ -356,7 +433,7 @@ export function StoreProvider({ children }: StoreProviderProps) {
   };
 
   const isInWishlist = (productId: string): boolean => {
-    return state.wishlist.some(item => item.product_id === productId);
+    return state.wishlist.some(item => item._id === productId);
   };
 
   const getCartItemQuantity = (productId: string): number => {
@@ -390,34 +467,52 @@ export function StoreProvider({ children }: StoreProviderProps) {
     
     const loadData = async () => {
       try {
-        console.log('🔄 StoreContext: Fetching categories...');
-        await fetchCategories();
+        console.log('🔄 StoreContext: Loading initial data in parallel...');
         
-        console.log('🔄 StoreContext: Fetching featured products...');
-        await fetchFeaturedProducts();
+        // Load essential data in parallel
+        const promises = [
+          fetchCategories(),
+          fetchFeaturedProducts(),
+          // Load localStorage data immediately (non-blocking)
+          (async () => {
+            try {
+              const storedCart = localStorage.getItem('cart');
+              const storedWishlist = localStorage.getItem('wishlist');
+              
+              if (storedCart) {
+                dispatch({ type: 'SET_CART', payload: JSON.parse(storedCart) });
+              }
+              if (storedWishlist) {
+                dispatch({ type: 'SET_WISHLIST', payload: JSON.parse(storedWishlist) });
+              }
+            } catch (error) {
+              console.warn('⚠️ StoreContext: Failed to load from localStorage:', error);
+            }
+          })()
+        ];
         
-        console.log('🔄 StoreContext: Loading user data...');
-        // Load cart and wishlist data
-        const loadUserData = async () => {
+        await Promise.allSettled(promises);
+        
+        // Try to sync with API in background (non-blocking)
+        setTimeout(async () => {
           try {
-            console.log('🔄 StoreContext: Loading cart and wishlist...');
-            const [cartData, wishlistData] = await Promise.all([
+            console.log('🔄 StoreContext: Syncing with API in background...');
+            const [cartData, wishlistData] = await Promise.allSettled([
               cartApi.getCart(),
               wishlistApi.getWishlist(),
             ]);
             
-            console.log('✅ StoreContext: Cart data:', cartData);
-            console.log('✅ StoreContext: Wishlist data:', wishlistData);
-            
-            dispatch({ type: 'SET_CART', payload: cartData.items || [] });
-            dispatch({ type: 'SET_WISHLIST', payload: wishlistData.items || [] });
+            if (cartData.status === 'fulfilled') {
+              dispatch({ type: 'SET_CART', payload: cartData.value.items || [] });
+            }
+            if (wishlistData.status === 'fulfilled') {
+              dispatch({ type: 'SET_WISHLIST', payload: wishlistData.value.items || [] });
+            }
           } catch (error) {
-            console.warn('⚠️ StoreContext: Failed to load user data:', error);
-            // Don't fail the entire load process for user data
+            console.warn('⚠️ StoreContext: Background API sync failed:', error);
           }
-        };
+        }, 100);
         
-        await loadUserData();
         console.log('✅ StoreContext: Initial data loading completed');
       } catch (error) {
         console.error('❌ StoreContext: Failed to load initial data:', error);

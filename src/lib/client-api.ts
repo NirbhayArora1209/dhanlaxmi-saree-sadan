@@ -5,8 +5,6 @@ const API_BASE = '/api';
 // Generic API call function
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const fullUrl = `${API_BASE}${endpoint}`;
-  console.log(`🔄 API Call: ${fullUrl}`);
-  console.log(`🔄 API Options:`, options);
   
   try {
     const response = await fetch(fullUrl, {
@@ -16,21 +14,16 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
       ...options,
     });
 
-    console.log(`📡 API Response Status: ${response.status} ${response.statusText}`);
-    console.log(`📡 API Response Headers:`, Object.fromEntries(response.headers.entries()));
-
     if (!response.ok) {
-      console.error(`❌ API Error: ${response.status} ${response.statusText}`);
       const errorText = await response.text();
-      console.error(`❌ API Error Body:`, errorText);
+      console.error(`❌ API Error: ${response.status} ${response.statusText} - ${errorText}`);
       throw new Error(`API call failed: ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log(`✅ API Response Data:`, data);
     return data;
   } catch (error) {
-    console.error(`❌ API Call Exception:`, error);
+    console.error(`❌ API Call Exception for ${endpoint}:`, error);
     throw error;
   }
 }
@@ -76,9 +69,17 @@ export const productsApi = {
 
   // Search products
   async searchProducts(query: string, limit: number = 12): Promise<Product[]> {
-    const searchParams = new URLSearchParams({ q: query, limit: limit.toString() });
-    const response = await apiCall<ApiResponse<Product[]>>(`/products?${searchParams}`);
-    return response.data!;
+    const searchParams = new URLSearchParams({ search: query, limit: limit.toString() });
+    const response = await apiCall<any>(`/products?${searchParams}`);
+    
+    // Handle both direct array response and paginated response
+    if (response.data?.data) {
+      return response.data.data; // Paginated response
+    } else if (response.data) {
+      return response.data; // Direct array response
+    } else {
+      return []; // Fallback
+    }
   },
 };
 

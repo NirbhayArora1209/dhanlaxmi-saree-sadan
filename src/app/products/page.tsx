@@ -15,7 +15,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react';
 import { Product } from '@/types';
-import { getProducts } from '@/lib/client-api';
+import { getProducts, productsApi } from '@/lib/client-api';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -39,16 +39,40 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 });
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([]);
 
+  // Get search query from URL parameters on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlSearchQuery = urlParams.get('search');
+    if (urlSearchQuery) {
+      setSearchQuery(urlSearchQuery);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await getProducts();
-        if (response.data) {
-          setProducts(response.data);
-          setFilteredProducts(response.data);
+        setLoading(true);
+        let fetchedProducts: Product[] = [];
+        
+        if (searchQuery.trim()) {
+          // Use API search when there's a search query
+          console.log('🔍 Searching for:', searchQuery);
+          fetchedProducts = await productsApi.searchProducts(searchQuery);
+          console.log('🔍 Search results:', fetchedProducts);
         } else {
-          setError('Failed to fetch products');
+          // Fetch all products when no search query
+          const response = await getProducts();
+          fetchedProducts = response.data || [];
         }
+        
+        // Ensure fetchedProducts is always an array
+        if (!Array.isArray(fetchedProducts)) {
+          console.warn('⚠️ Products data is not an array:', fetchedProducts);
+          fetchedProducts = [];
+        }
+        
+        setProducts(fetchedProducts);
+        setFilteredProducts(fetchedProducts);
       } catch (err) {
         setError('Failed to fetch products');
         console.error('Error fetching products:', err);
@@ -58,20 +82,11 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [searchQuery]); // Re-fetch when search query changes
 
-  // Filter and sort products
+  // Filter and sort products (search is handled by API)
   useEffect(() => {
     let filtered = [...products];
-
-    // Search filter
-    if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
 
     // Category filter
     if (selectedCategories.length > 0) {
@@ -116,7 +131,7 @@ export default function ProductsPage() {
     }
 
     setFilteredProducts(filtered);
-  }, [products, searchQuery, selectedCategories, priceRange, selectedOccasions, sortBy]);
+  }, [products, selectedCategories, priceRange, selectedOccasions, sortBy]); // Removed searchQuery since it's handled by API
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -318,15 +333,17 @@ export default function ProductsPage() {
         </div>
       </section>
 
-      {/* Filters Sidebar */}
-      <AnimatePresence>
-        {showFilters && (
-          <motion.div
-            initial={{ opacity: 0, x: -300 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -300 }}
-            className="fixed inset-y-0 left-0 z-50 w-80 bg-white shadow-2xl lg:relative lg:shadow-none"
-          >
+      {/* Main Content with Sidebar */}
+      <div className="flex">
+        {/* Filters Sidebar */}
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 320 }}
+              exit={{ opacity: 0, width: 0 }}
+              className="bg-white border-r border-gray-200 overflow-hidden"
+            >
             <div className="p-6 h-full overflow-y-auto">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold">Filters</h3>
@@ -410,9 +427,10 @@ export default function ProductsPage() {
         )}
       </AnimatePresence>
 
-      {/* Products Grid */}
-      <section className="section-compact">
-        <div className="container mx-auto px-4">
+        {/* Products Grid */}
+        <div className="flex-1">
+          <section className="section-compact">
+            <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <p className="text-muted-foreground">
               Showing {filteredProducts.length} of {products.length} products
@@ -433,7 +451,7 @@ export default function ProductsPage() {
                       <img
                         src={product.images[0]?.url || '/images/products/placeholder.jpg'}
                         alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
                       />
                       
                       {/* Quick Actions */}
@@ -530,7 +548,7 @@ export default function ProductsPage() {
                         <img
                           src={product.images[0]?.url || '/images/products/placeholder.jpg'}
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-top"
                         />
                         {product.pricing.discount_percentage > 0 && (
                           <Badge
@@ -612,8 +630,10 @@ export default function ProductsPage() {
               </Button>
             </div>
           )}
+            </div>
+          </section>
         </div>
-      </section>
+      </div>
 
       <Footer />
     </div>

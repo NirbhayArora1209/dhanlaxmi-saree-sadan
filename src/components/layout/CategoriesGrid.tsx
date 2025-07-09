@@ -47,7 +47,7 @@ const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories }) => {
                       src={category.image}
                       alt={category.name}
                       fill
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-500"
                       sizes="(max-width: 768px) 100vw, 25vw"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors duration-300" />

@@ -49,10 +49,10 @@ export default function WishlistPage() {
         {/* Wishlist Items */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {wishlist.map((item) => (
-            <div key={item.product_id} className="card group">
+            <div key={item._id} className="card group">
               <div className="aspect-square overflow-hidden rounded-t-lg">
                 <img
-                  src={item.image}
+                  src={item.images?.[0]?.url || '/images/products/placeholder.jpg'}
                   alt={item.name}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -64,18 +64,18 @@ export default function WishlistPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-lg font-bold">
-                      ₹{item.price.toLocaleString()}
+                      ₹{item.pricing?.selling_price?.toLocaleString() || 'N/A'}
                     </span>
                   </div>
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => store.addToCart({ _id: item.product_id, name: item.name, pricing: { selling_price: item.price }, images: [item.image] } as any, 1)}
+                      onClick={() => store.addToCart(item, 1)}
                       className="btn btn-primary text-sm"
                     >
                       Add to Cart
                     </button>
                     <button
-                      onClick={() => store.removeFromWishlist(item.product_id)}
+                      onClick={() => store.removeFromWishlist(item._id)}
                       className="btn btn-outline text-sm"
                     >
                       Remove
