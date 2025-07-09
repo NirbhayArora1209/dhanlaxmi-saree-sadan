@@ -26,6 +26,14 @@ const customJestConfig = {
       statements: 70,
     },
   },
+  // Add global setup for Node.js APIs
+  setupFiles: ['<rootDir>/jest.polyfills.js'],
+  // Mock Next.js server components
+  globals: {
+    'ts-jest': {
+      useESM: true,
+    },
+  },
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async

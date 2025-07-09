@@ -126,15 +126,15 @@ export default function Footer() {
 
       {/* Main Footer Content */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Brand Section */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 text-center md:text-left">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="flex items-center space-x-3 mb-4">
+              <div className="flex items-center justify-center md:justify-start space-x-3 mb-4">
                 <Image
                   src="/images/Logo.png"
                   alt="Dhanlaxmi Saree Sadan"
@@ -142,33 +142,35 @@ export default function Footer() {
                   height={40}
                   className="w-10 h-10 object-contain"
                 />
-                <h2 className="text-2xl font-serif font-bold text-gradient">
-                  Dhanlaxmi Saree Sadan
-                </h2>
+                <div>
+                  <h2 className="text-xl lg:text-2xl font-serif font-bold text-gradient leading-tight">
+                    Dhanlaxmi Saree Sadan
+                  </h2>
+                </div>
               </div>
-              <p className="text-gray-300 mb-6 leading-relaxed">
+              <p className="text-gray-300 mb-6 leading-relaxed text-sm lg:text-base">
                 Discover the timeless elegance of traditional Indian sarees. 
                 Handcrafted with love and premium materials for every special occasion.
               </p>
               
               {/* Contact Info */}
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center space-x-3 text-gray-300">
-                  <Phone size={16} />
+              <div className="space-y-3 mb-6 text-sm">
+                <div className="flex items-center justify-center md:justify-start space-x-3 text-gray-300">
+                  <Phone size={16} className="flex-shrink-0" />
                   <span>+91 98765 43210</span>
                 </div>
-                <div className="flex items-center space-x-3 text-gray-300">
-                  <Mail size={16} />
+                <div className="flex items-center justify-center md:justify-start space-x-3 text-gray-300">
+                  <Mail size={16} className="flex-shrink-0" />
                   <span>info@dhanlaxmisarees.com</span>
                 </div>
-                <div className="flex items-start space-x-3 text-gray-300">
-                  <MapPin size={16} className="mt-1" />
+                <div className="flex items-start justify-center md:justify-start space-x-3 text-gray-300">
+                  <MapPin size={16} className="mt-1 flex-shrink-0" />
                   <span>123 Fashion Street, Mumbai, Maharashtra 400001</span>
                 </div>
               </div>
 
               {/* Social Links */}
-              <div className="flex space-x-4">
+              <div className="flex justify-center md:justify-start space-x-4">
                 {socialLinks.map((social) => (
                   <motion.a
                     key={social.label}
@@ -192,6 +194,7 @@ export default function Footer() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: sectionIndex * 0.1 }}
+              className="text-center md:text-left"
             >
               <h3 className="text-lg font-semibold mb-4 text-white">
                 {section.title}
@@ -201,9 +204,9 @@ export default function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-gray-300 hover:text-amber-400 transition-colors duration-300 flex items-center group"
+                      className="text-gray-300 hover:text-amber-400 transition-colors duration-300 flex items-center justify-center md:justify-start group text-sm"
                     >
-                      <ArrowRight size={12} className="mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <ArrowRight size={12} className="mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex-shrink-0" />
                       {link.label}
                     </Link>
                   </li>
@@ -249,11 +252,11 @@ export default function Footer() {
       <div className="border-t border-gray-700">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            <div className="text-gray-400 text-sm">
+            <div className="text-gray-400 text-sm text-center md:text-left">
               © {currentYear} Dhanlaxmi Saree Sadan. All rights reserved.
             </div>
             
-            <div className="flex items-center space-x-6 text-sm">
+            <div className="flex items-center justify-center md:justify-end space-x-4 lg:space-x-6 text-sm">
               <Link href="/privacy" className="text-gray-400 hover:text-amber-400 transition-colors">
                 Privacy Policy
               </Link>

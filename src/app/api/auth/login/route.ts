@@ -1,61 +1,71 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import connectDB from '@/lib/db';
-import mongoose from 'mongoose';
-import { IUser } from '@/models/User';
 import UserModel from '@/models/User';
-import { generateToken } from '@/lib/auth';
-import { successResponse, errorResponse, handleDatabaseError } from '@/lib/api';
+import { userLoginSchema, validateSchema } from '@/lib/validation';
 
+// This API route is for custom login handling if needed
+// NextAuth will handle most authentication through /api/auth/[...nextauth]
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
     
     const body = await request.json();
     
-    // Validate required fields
-    if (!body.email || !body.password) {
-      return errorResponse('Email and password are required', 400);
+    // Validate request body
+    const validation = validateSchema(userLoginSchema, body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid login data', details: validation.errors },
+        { status: 400 }
+      );
     }
-
+    
+    const { email, password } = validation.data;
+    
     // Find user by email
     const user = await UserModel.findOne({ 
-      email: body.email.toLowerCase(),
+      email: email.toLowerCase(),
       is_active: true
-    }) as IUser | null;
+    });
 
     if (!user) {
-      return errorResponse('Invalid email or password', 401);
+      return NextResponse.json(
+        { success: false, error: 'Invalid credentials' },
+        { status: 401 }
+      );
     }
 
     // Check password
-    const isPasswordValid = await user.comparePassword(body.password);
+    const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      return errorResponse('Invalid email or password', 401);
+      return NextResponse.json(
+        { success: false, error: 'Invalid credentials' },
+        { status: 401 }
+      );
     }
-
-    // Generate JWT token
-    const token = generateToken({
-      userId: (user._id as any).toString(),
-      email: user.email,
-      role: user.role
-    });
 
     // Return user data without password
     const userData = {
-      _id: (user._id as any).toString(),
+      id: (user._id as any).toString(),
       name: user.name,
       email: user.email,
       phone: user.phone,
       role: user.role,
-      email_verified: user.email_verified
+      emailVerified: user.email_verified
     };
 
-    return successResponse({
-      user: userData,
-      token
+    return NextResponse.json({
+      success: true,
+      message: 'Login successful',
+      user: userData
     });
 
   } catch (error) {
-    return handleDatabaseError(error);
+    console.error('Login error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 } 

@@ -13,8 +13,10 @@ import {
   Search as SearchIcon,
   ChevronDown,
   Phone,
-  Mail
+  Mail,
+  LogOut
 } from 'lucide-react';
+import { useSession, signOut } from 'next-auth/react';
 import { useStore } from '@/context/StoreContext';
 import Search from '@/components/ui/Search';
 import Button from '@/components/ui/Button';
@@ -25,12 +27,14 @@ interface HeaderProps {
 }
 
 export default function Header({ activePage = 'home' }: HeaderProps) {
+  const { data: session } = useSession();
   const store = useStore();
   const cartCount = store.getCartCount();
   const wishlistCount = store.wishlist.length;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showAccountDropdown, setShowAccountDropdown] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -105,7 +109,7 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
       <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-100">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between py-2 text-sm">
-            <div className="hidden md:flex items-center space-x-6 text-amber-800">
+            <div className="hidden lg:flex items-center space-x-6 text-amber-800">
               <div className="flex items-center space-x-2">
                 <Phone size={14} />
                 <span>+91 98765 43210</span>
@@ -115,7 +119,7 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
                 <span>support@dhanlaxmi.com</span>
               </div>
             </div>
-            <div className="text-amber-700 font-medium">
+            <div className="text-amber-700 font-medium text-center lg:text-right flex-1 lg:flex-initial">
               Free Shipping on Orders Above ₹2000
             </div>
           </div>
@@ -134,9 +138,9 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
         transition={{ duration: 0.5 }}
       >
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between py-4">
+          <div className="flex items-center justify-between py-3 lg:py-4 gap-4">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center space-x-3 flex-shrink-0">
               <Image
                 src="/images/Logo.png"
                 alt="Dhanlaxmi Saree Sadan"
@@ -146,11 +150,11 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
                 priority
                 unoptimized
               />
-              <div>
-                <h1 className="text-2xl font-serif font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
+              <div className="min-w-0">
+                <h1 className="text-xl lg:text-2xl font-serif font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent leading-tight">
                   Dhanlaxmi Saree Sadan
                 </h1>
-                <p className="text-sm text-amber-600/80 font-medium">
+                <p className="text-xs lg:text-sm text-amber-600/80 font-medium leading-tight">
                   Traditional Elegance, Modern Style
                 </p>
               </div>
@@ -172,9 +176,9 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
             </nav>
 
             {/* Right Actions */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 lg:space-x-6">
               {/* Search Bar */}
-              <div className="hidden md:block w-80">
+              <div className="hidden md:block w-64 lg:w-80">
                 <Search
                   onSearch={handleSearch}
                   suggestions={[
@@ -197,7 +201,7 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 lg:space-x-3">
                 {/* Mobile Search */}
                 <button
                   onClick={() => setShowSearch(!showSearch)}
@@ -235,9 +239,56 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
                 </Link>
 
                 {/* Account */}
-                <Link href="/account" className="p-2 rounded-lg hover:bg-amber-50 transition-colors">
-                  <User size={20} className="text-amber-600" />
-                </Link>
+                <div className="relative">
+                  {session ? (
+                    <>
+                      <button
+                        onClick={() => setShowAccountDropdown(!showAccountDropdown)}
+                        className="flex items-center space-x-2 p-2 rounded-lg hover:bg-amber-50 transition-colors"
+                      >
+                        <User size={20} className="text-amber-600" />
+                        <span className="hidden sm:block text-sm text-amber-700 font-medium">
+                          {session.user.name?.split(' ')[0]}
+                        </span>
+                        <ChevronDown size={16} className="text-amber-600" />
+                      </button>
+                      
+                      {showAccountDropdown && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-amber-100 py-2 z-50">
+                          <Link
+                            href="/account"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
+                            onClick={() => setShowAccountDropdown(false)}
+                          >
+                            My Account
+                          </Link>
+                          <Link
+                            href="/orders"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition-colors"
+                            onClick={() => setShowAccountDropdown(false)}
+                          >
+                            My Orders
+                          </Link>
+                          <div className="border-t border-amber-100 my-1"></div>
+                          <button
+                            onClick={() => {
+                              setShowAccountDropdown(false);
+                              signOut({ callbackUrl: '/' });
+                            }}
+                            className="flex items-center space-x-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <LogOut size={16} />
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <Link href="/auth/login" className="p-2 rounded-lg hover:bg-amber-50 transition-colors">
+                      <User size={20} className="text-amber-600" />
+                    </Link>
+                  )}
+                </div>
 
                 {/* Mobile Menu */}
                 <button
@@ -323,9 +374,23 @@ export default function Header({ activePage = 'home' }: HeaderProps) {
                         <span>Cart ({cartCount})</span>
                       </Link>
                     </div>
-                    <Link href="/account" className="text-sm text-orange-600 font-medium hover:text-orange-700">
-                      My Account
-                    </Link>
+                    {session ? (
+                      <div className="flex items-center space-x-3">
+                        <Link href="/account" className="text-sm text-orange-600 font-medium hover:text-orange-700">
+                          {session.user.name?.split(' ')[0]}
+                        </Link>
+                        <button
+                          onClick={() => signOut({ callbackUrl: '/' })}
+                          className="text-sm text-red-600 font-medium hover:text-red-700"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    ) : (
+                      <Link href="/auth/login" className="text-sm text-orange-600 font-medium hover:text-orange-700">
+                        Sign In
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>

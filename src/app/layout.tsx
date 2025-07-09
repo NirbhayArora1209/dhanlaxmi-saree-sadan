@@ -1,6 +1,7 @@
 import './globals.css';
 import { StoreProvider } from '@/context/StoreContext';
 import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import SessionProvider from '@/components/providers/SessionProvider';
 
 export const metadata = {
   title: 'Dhanlaxmi Saree Sadan',
@@ -17,9 +18,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="min-h-screen bg-background">
         <ErrorBoundary>
-          <StoreProvider>
-            {children}
-          </StoreProvider>
+          <SessionProvider>
+            <StoreProvider>
+              {children}
+            </StoreProvider>
+          </SessionProvider>
         </ErrorBoundary>
       </body>
     </html>

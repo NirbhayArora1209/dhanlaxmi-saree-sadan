@@ -22,6 +22,8 @@ import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import Search from '@/components/ui/Search';
+import SkeletonLoader from '@/components/ui/SkeletonLoader';
+import ErrorMessage from '@/components/ui/ErrorMessage';
 import { useStore } from '@/context/StoreContext';
 import { formatPrice } from '@/lib/utils';
 
@@ -172,15 +174,42 @@ export default function ProductsPage() {
   const categories = Array.from(new Set(products.map(p => p.category)));
   const occasions = Array.from(new Set(products.map(p => p.specifications.occasion)));
 
+  const retryFetch = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      let fetchedProducts: Product[] = [];
+      
+      if (searchQuery.trim()) {
+        fetchedProducts = await productsApi.searchProducts(searchQuery);
+      } else {
+        const response = await getProducts();
+        fetchedProducts = response.data || [];
+      }
+      
+      if (!Array.isArray(fetchedProducts)) {
+        fetchedProducts = [];
+      }
+      
+      setProducts(fetchedProducts);
+      setFilteredProducts(fetchedProducts);
+    } catch (err) {
+      setError('Failed to fetch products');
+      console.error('Error fetching products:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <Header activePage="products" />
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading products...</p>
+          <div className="mb-8">
+            <SkeletonLoader variant="text" />
           </div>
+          <SkeletonLoader variant="product" count={12} />
         </div>
       </div>
     );
@@ -188,15 +217,14 @@ export default function ProductsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
         <Header activePage="products" />
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </div>
+          <ErrorMessage
+            title="Failed to load products"
+            message={error}
+            onRetry={retryFetch}
+          />
         </div>
       </div>
     );

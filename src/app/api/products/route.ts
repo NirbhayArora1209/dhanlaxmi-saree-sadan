@@ -10,6 +10,7 @@ import {
   parseQueryParams,
   getPaginationInfo 
 } from '@/lib/api';
+import { productQuerySchema, productSchema, validateSchema } from '@/lib/validation';
 
 // Fallback data when database is not available
 const fallbackProducts = [
@@ -176,7 +177,22 @@ export async function GET(request: NextRequest) {
     const sort = searchParams.get('sort') || 'created_at';
     const order = searchParams.get('order') || 'desc';
     
-    console.log('🔄 Products API: Query params:', { category, featured, search, limit, page, sort, order });
+    // Basic validation
+    if (limit < 1 || limit > 100) {
+      return NextResponse.json(
+        { success: false, error: 'Limit must be between 1 and 100' },
+        { status: 400 }
+      );
+    }
+    
+    if (page < 1) {
+      return NextResponse.json(
+        { success: false, error: 'Page must be positive' },
+        { status: 400 }
+      );
+    }
+    
+    console.log('🔄 Products API: Validated query params:', { category, featured, search, limit, page, sort, order });
     
     let products = [];
     let total = 0;
@@ -287,22 +303,28 @@ export async function POST(request: NextRequest) {
     
     const body = await request.json();
     
-    // Basic validation
-    if (!body.name || !body.description || !body.category) {
-      return errorResponse('Missing required fields', 400, 'Name, description, and category are required');
+    // Validate request body
+    const validation = validateSchema(productSchema, body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid product data', details: validation.errors },
+        { status: 400 }
+      );
     }
     
+    const productData = validation.data;
+    
     // Validate category exists if provided as slug
-    if (typeof body.category === 'string') {
-      const categoryDoc = await CategoryModel.findOne({ slug: body.category, is_active: true });
+    if (typeof productData.category === 'string') {
+      const categoryDoc = await CategoryModel.findOne({ slug: productData.category, is_active: true });
       if (!categoryDoc) {
         return errorResponse('Invalid category', 400, 'The specified category does not exist');
       }
-      body.category = categoryDoc._id;
+      productData.category = categoryDoc._id.toString();
     }
     
     // Create product
-    const product = new ProductModel(body);
+    const product = new ProductModel(productData);
     await product.save();
     
     // Populate category data in response

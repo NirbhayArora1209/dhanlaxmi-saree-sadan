@@ -47,7 +47,6 @@ const CartSchema = new Schema<ICart>({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true,
-    index: true,
   },
   items: [CartItemSchema],
   total_amount: {

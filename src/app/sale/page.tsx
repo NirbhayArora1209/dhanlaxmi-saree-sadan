@@ -64,10 +64,31 @@ const SalePage = () => {
         <Header activePage="sale" />
         <main className="pt-20">
           <div className="container-custom py-8">
+            {/* Sale Banner */}
             <div className="mb-8 text-center">
-              <h1 className="font-playfair font-bold text-3xl text-gray-900 mb-2">Sale</h1>
-              <div className="w-16 h-1 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full mb-6 opacity-80 mx-auto"></div>
-              <p className="text-lg text-gray-600 mb-4">Discover our best deals on premium sarees. Limited time offers!</p>
+              <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-6 rounded-full inline-block mb-4">
+                <div className="flex items-center gap-2">
+                  <Tag size={20} />
+                  <span className="font-semibold">MEGA SALE</span>
+                </div>
+              </div>
+              <h1 className="font-playfair font-bold text-4xl text-gray-900 mb-2">
+                Special Sale Collection
+              </h1>
+              <div className="w-20 h-1 bg-gradient-to-r from-red-400 to-pink-500 rounded-full mb-6 mx-auto"></div>
+              <p className="text-lg text-gray-600 mb-4">
+                Discover our best deals on premium sarees. Limited time offers with up to 30% off!
+              </p>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <TrendingDown size={16} />
+                  <span>Up to 30% OFF</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Sparkles size={16} />
+                  <span>Limited Time</span>
+                </div>
+              </div>
             </div>
             {saleProducts.length > 0 ? (
               <div className="flex flex-col lg:flex-row gap-8">
@@ -87,11 +108,16 @@ const SalePage = () => {
                 </div>
                 <div className="lg:w-3/4">
                   <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                      Sale Products ({saleProducts.length})
-                    </h2>
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        Sale Products ({saleProducts.length})
+                      </h2>
+                      <div className="text-sm text-gray-500 bg-yellow-100 px-3 py-1 rounded-full">
+                        🔥 Hot Deals
+                      </div>
+                    </div>
                     <p className="text-gray-600">
-                      Handpicked sarees with exclusive discounts
+                      Handpicked sarees with exclusive discounts - Save big on premium collections!
                     </p>
                   </div>
                   <ProductGrid products={saleProducts} />

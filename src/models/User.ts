@@ -16,6 +16,10 @@ export interface IUser extends Document {
   role: 'customer' | 'admin';
   is_active: boolean;
   email_verified: boolean;
+  verification_otp?: string;
+  verification_otp_expiry?: Date;
+  reset_token?: string;
+  reset_token_expiry?: Date;
   created_at: Date;
   updated_at: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -31,7 +35,6 @@ const UserSchema: Schema = new Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
     lowercase: true,
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
@@ -80,6 +83,22 @@ const UserSchema: Schema = new Schema({
   email_verified: {
     type: Boolean,
     default: false
+  },
+  verification_otp: {
+    type: String,
+    sparse: true
+  },
+  verification_otp_expiry: {
+    type: Date,
+    sparse: true
+  },
+  reset_token: {
+    type: String,
+    sparse: true
+  },
+  reset_token_expiry: {
+    type: Date,
+    sparse: true
   }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
@@ -104,7 +123,7 @@ UserSchema.methods.comparePassword = async function(candidatePassword: string): 
 };
 
 // Indexes
-UserSchema.index({ email: 1 });
+UserSchema.index({ email: 1 }, { unique: true });
 UserSchema.index({ role: 1, is_active: 1 });
 
 export const UserModel: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

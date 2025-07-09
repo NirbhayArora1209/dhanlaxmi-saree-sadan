@@ -1,17 +1,35 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 import { RateLimiter } from '@/lib/errors';
 
 // Initialize rate limiter
 const rateLimiter = new RateLimiter(60000, 100); // 100 requests per minute
 
-export function middleware(request: NextRequest) {
+const secret = process.env.NEXTAUTH_SECRET;
+
+// Protected routes that require authentication
+const protectedRoutes = ['/account', '/orders', '/wishlist', '/cart'];
+
+// Admin routes that require admin role
+const adminRoutes = ['/admin'];
+
+// Auth routes that should redirect if user is logged in
+const authRoutes = ['/auth/login', '/auth/register'];
+
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // TEMPORARILY DISABLED FOR TESTING
-  // Skip middleware for all API routes during development
+  // Apply rate limiting to API routes
   if (pathname.startsWith('/api/')) {
-    return NextResponse.next();
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+    
+    if (!rateLimiter.isAllowed(ip)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
   }
   
   // Skip middleware for static files
@@ -21,6 +39,35 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/favicon.ico')
   ) {
     return NextResponse.next();
+  }
+
+  // Get the token from NextAuth
+  const token = await getToken({ req: request, secret });
+  
+  // Check if user is trying to access protected routes
+  if (protectedRoutes.some(route => pathname.startsWith(route))) {
+    if (!token) {
+      const loginUrl = new URL('/auth/login', request.url);
+      loginUrl.searchParams.set('callbackUrl', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    
+    // Note: Email verification is handled in the UI, not middleware
+    // This allows users to access account page and see verification prompts
+  }
+
+  // Check if user is trying to access admin routes
+  if (adminRoutes.some(route => pathname.startsWith(route))) {
+    if (!token || token.role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (authRoutes.some(route => pathname.startsWith(route))) {
+    if (token) {
+      return NextResponse.redirect(new URL('/account', request.url));
+    }
   }
 
   // Security headers only for non-API routes
@@ -54,13 +101,13 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
+    '/account/:path*',
+    '/orders/:path*',
+    '/wishlist/:path*',
+    '/cart/:path*',
+    '/admin/:path*',
+    '/auth/:path*',
+    '/api/:path*',
     '/((?!_next/static|_next/image|favicon.ico|public/).*)',
   ],
 }; 
